@@ -6,8 +6,9 @@
 # Objetivo: a partir dos microdados do Saeb 2023 (alunos do 5º ano),
 #   1. sortear uma amostra estratificada por UF;
 #   2. manter apenas alunos com prova e questionário válidos;
-#   3. criar as variáveis resposta (abaixo do nível básico em LP e MT);
-#   4. separar as bases de treino e teste para a modelagem.
+#   3. criar as variáveis resposta (abaixo do nível básico em LP e MT).
+#
+# A separação em treino e teste fica em R/02_treino_teste.R.
 #
 # Entrada: TS_ALUNO_5EF.csv
 #   Fonte: https://download.inep.gov.br/microdados/microdados_saeb_2023.zip
@@ -119,19 +120,3 @@ amostra_limpa <- amostra_limpa %>%
 # ---------------------------------------------------------------------
 
 write.csv(amostra_limpa, "data/amostra_limpa.csv", row.names = FALSE)
-
-
-# ---------------------------------------------------------------------
-# 7. Separação em treino (90%) e teste (10%)
-# ---------------------------------------------------------------------
-# O teste é sorteado estratificado por abaixo_LP, para manter nele a
-# mesma proporção de alunos abaixo do básico em LP da base completa.
-# O treino é tudo o que não entrou no teste.
-
-teste <- amostra_limpa %>%
-  group_by(abaixo_LP) %>%
-  slice_sample(prop = 0.10) %>%
-  ungroup()
-
-treino <- amostra_limpa %>%
-  anti_join(teste, by = "ID_ALUNO")
