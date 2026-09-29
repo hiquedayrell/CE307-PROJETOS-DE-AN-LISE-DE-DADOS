@@ -4,7 +4,9 @@ treino <- read.csv("data/treino.csv")
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-ANÁLISE INICIAL-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
+#--------------------------------------------------------
 # 1.0 Medidas de tendência geral, disperção e frequências
+#--------------------------------------------------------
 
 #LP
 mean(treino$PROFICIENCIA_LP_SAEB, na.rm = T)
@@ -56,19 +58,21 @@ treino %>%
   mutate(prop = n / sum(n))
 
 #Gráfico de Dispersão entre notas de LP e MT:
-treino %>%
+treino %>% 
   ggplot() +
-  aes(x = PROFICIENCIA_MT_SAEB,
-      y = PROFICIENCIA_LP_SAEB) +
-  geom_point(alpha = 0.4, pch = "circle") +
+  aes(x = PROFICIENCIA_MT_SAEB, 
+      y = PROFICIENCIA_LP_SAEB) +     
+  geom_point(alpha = 0.4, pch = "circle") +  
   geom_smooth(method = "loess", color = "red", se = FALSE) +
   labs(
     title = "Relação entre notas de Língua Portuguesa e Matemática",
     x = "Nota de Matemática",
     y = "Nota de Língua Portuguesa"
   )
-
+#------------------------------------------------------
 #1.1 Alunos abaixo do básico por categoria de variável:
+#------------------------------------------------------
+
 resumo_variavel <- function(dados, variavel) {
   dados %>%
     group_by({{ variavel }}) %>%
@@ -79,8 +83,11 @@ resumo_variavel <- function(dados, variavel) {
               prop_MT = mean(abaixo_MT, na.rm = TRUE))
 }
 
+#-----------------------------------
 #1.1.1 - Características/Informações
-#Sexo
+#-----------------------------------
+
+#Sexo 
 resumo_variavel(treino, TX_RESP_Q01)
 
 #LP:
@@ -88,24 +95,24 @@ resumo_variavel(treino, TX_RESP_Q01)
 treino %>%
   group_by(TX_RESP_Q01) %>%
   summarise(proporção = mean(abaixo_LP, na.rm = T)) %>%
-  ggplot(aes(x=TX_RESP_Q01 ,y=proporção)) +
-  geom_col() +
+  ggplot(aes(x=TX_RESP_Q01 ,y=proporção)) + 
+  geom_col() + 
   labs(title = "Proporção de alunos abaixo do nível básico de Língua Portuguesa para cada gênero",
        x = "Sexo",
        y = "Frequência") +
   scale_x_discrete(labels = c("A" = "Masculino",
-                                "B" = "Feminino",
-                                "C" = "Não declarado")) +
+                              "B" = "Feminino",
+                              "C" = "Não declarado")) +
   theme_minimal()
 
 #Boxplot
-treino %>%
+treino %>% 
   ggplot() +
   aes(x = TX_RESP_Q01, y = PROFICIENCIA_LP_SAEB, fill = TX_RESP_Q01, color = TX_RESP_Q01) +
   geom_boxplot(, outlier.colour = "red", alpha = 0.1) +
   scale_x_discrete(labels = c("A" = "Masculino",
-                   "B" = "Feminino",
-                   "C" = "Não Informado")) +
+                              "B" = "Feminino",
+                              "C" = "Não Informado")) +
   theme_minimal()
 
 #MT:
@@ -113,8 +120,8 @@ treino %>%
 treino %>%
   group_by(TX_RESP_Q01) %>%
   summarise(proporção = mean(abaixo_MT, na.rm = T)) %>%
-  ggplot(aes( x = TX_RESP_Q01 , y = proporção)) +
-  geom_col() +
+  ggplot(aes( x = TX_RESP_Q01 , y = proporção)) + 
+  geom_col() + 
   labs(title = "Proporção de alunos abaixo do nível básico de Matemática para cada gênero",
        x = "Sexo",
        y = "Frequência") +
@@ -124,7 +131,7 @@ treino %>%
   theme_minimal()
 
 #Boxplot
-treino %>%
+treino %>% 
   ggplot() +
   aes(x = TX_RESP_Q01, y = PROFICIENCIA_MT_SAEB, fill = TX_RESP_Q01, color = TX_RESP_Q01) +
   geom_boxplot(, outlier.colour = "red", alpha = 0.1) +
@@ -133,7 +140,7 @@ treino %>%
                               "C" = "Não Informado")) +
   theme_minimal()
 
-#COR/RAÇA
+#COR/RAÇA 
 resumo_variavel(treino, TX_RESP_Q04)
 
 #LP:
@@ -141,11 +148,11 @@ resumo_variavel(treino, TX_RESP_Q04)
 treino %>%
   group_by(TX_RESP_Q04) %>%
   summarise(proporção = mean(abaixo_LP, na.rm = T)) %>%
-  ggplot(aes(x=TX_RESP_Q04 ,y=proporção)) +
-  geom_col()
+  ggplot(aes(x=TX_RESP_Q04 ,y=proporção)) + 
+  geom_col() 
 
 #Boxplot:
-treino %>%
+treino %>% 
   ggplot() +
   aes(x = TX_RESP_Q04, y = PROFICIENCIA_LP_SAEB, fill = TX_RESP_Q04, color = TX_RESP_Q04) +
   geom_boxplot(, outlier.colour = "red", alpha = 0.1) +
@@ -156,11 +163,11 @@ treino %>%
 treino %>%
   group_by(TX_RESP_Q04) %>%
   summarise(proporção = mean(abaixo_MT, na.rm = T)) %>%
-  ggplot(aes(x=TX_RESP_Q04 ,y=proporção)) +
-  geom_col()
+  ggplot(aes(x=TX_RESP_Q04 ,y=proporção)) + 
+  geom_col() 
 
 #Boxplot:
-treino %>%
+treino %>% 
   ggplot() +
   aes(x = TX_RESP_Q04, y = PROFICIENCIA_MT_SAEB, fill = TX_RESP_Q04, color = TX_RESP_Q04) +
   geom_boxplot(, outlier.colour = "red", alpha = 0.1) +
@@ -171,7 +178,7 @@ resumo_variavel(treino, TX_RESP_Q02)
 
 #LP:
 #Boxplot:
-treino %>%
+treino %>% 
   ggplot() +
   aes(x = TX_RESP_Q02, y = PROFICIENCIA_LP_SAEB, fill = TX_RESP_Q02, color = TX_RESP_Q02) +
   geom_boxplot(, outlier.colour = "red", alpha = 0.1) +
@@ -179,7 +186,7 @@ treino %>%
 
 #MT:
 #Boxplot:
-treino %>%
+treino %>% 
   ggplot() +
   aes(x = TX_RESP_Q02, y = PROFICIENCIA_MT_SAEB, fill = TX_RESP_Q02, color = TX_RESP_Q02) +
   geom_boxplot(, outlier.colour = "red", alpha = 0.1) +
@@ -188,7 +195,37 @@ treino %>%
 #REPROVAÇÃO
 resumo_variavel(treino, TX_RESP_Q19)
 
-#1.1.2 - Informações do ambiente que está inserido
+#Já abandonou a escola, deixando de frequentar até o final do ano
+resumo_variavel(treino, TX_RESP_Q20)
+
+#Com que idade entrou na escola
+resumo_variavel(treino, TX_RESP_Q17)
+
+#---------------------------------------------------
+#1.1.2 - Ambiente que está inserido
+#---------------------------------------------------
+
+#MORA COM A MÃE
+resumo_variavel(treino, TX_RESP_Q07a)
+
+#MORA COM O PAI
+resumo_variavel(treino, TX_RESP_Q07b)
+
+#INDICADOR SOCIO-ECONÔMICO
+resumo_variavel(treino, NU_TIPO_NIVEL_INSE)
+
+#Tipo de escola a partir do fundamental
+resumo_variavel(treino, TX_RESP_Q18)
+
+#Localização
+resumo_variavel(treino, ID_LOCALIZACAO)
+
+#------------------------------------
+#1.1.3 - INFORMAÇÕES DOS RESPONSÁVEIS
+#------------------------------------
+
+#RESPONSÁVEIS INCENTIVAM A ESTUDAR:
+resumo_variavel(treino, TX_RESP_Q10c)
 
 #ESCOLARIDADE DA MÃE:
 resumo_variavel(treino, TX_RESP_Q08)
@@ -198,11 +235,11 @@ resumo_variavel(treino, TX_RESP_Q08)
 treino %>%
   group_by(TX_RESP_Q08) %>%
   summarise(proporção = mean(abaixo_LP, na.rm = T)) %>%
-  ggplot(aes(x=TX_RESP_Q08 ,y=proporção)) +
-  geom_col()
+  ggplot(aes(x=TX_RESP_Q08 ,y=proporção)) + 
+  geom_col() 
 
 #Boxplot:
-treino %>%
+treino %>% 
   ggplot() +
   aes(x = TX_RESP_Q08, y = PROFICIENCIA_LP_SAEB, fill = TX_RESP_Q08, color = TX_RESP_Q08) +
   geom_boxplot(, outlier.colour = "red", alpha = 0.1) +
@@ -213,11 +250,11 @@ treino %>%
 treino %>%
   group_by(TX_RESP_Q08) %>%
   summarise(proporção = mean(abaixo_MT, na.rm = T)) %>%
-  ggplot(aes(x=TX_RESP_Q08 ,y=proporção)) +
+  ggplot(aes(x=TX_RESP_Q08 ,y=proporção)) + 
   geom_col()
 
 #Boxplot:
-treino %>%
+treino %>% 
   ggplot() +
   aes(x = TX_RESP_Q08, y = PROFICIENCIA_MT_SAEB, fill = TX_RESP_Q08, color = TX_RESP_Q08) +
   geom_boxplot(, outlier.colour = "red", alpha = 0.1) +
@@ -231,11 +268,11 @@ resumo_variavel(treino, TX_RESP_Q09)
 treino %>%
   group_by(TX_RESP_Q09) %>%
   summarise(proporção = mean(abaixo_LP, na.rm = T)) %>%
-  ggplot(aes(x=TX_RESP_Q09 ,y=proporção)) +
-  geom_col()
+  ggplot(aes(x=TX_RESP_Q09 ,y=proporção)) + 
+  geom_col() 
 
 #Boxplot:
-treino %>%
+treino %>% 
   ggplot() +
   aes(x = TX_RESP_Q09, y = PROFICIENCIA_LP_SAEB, fill = TX_RESP_Q09, color = TX_RESP_Q09) +
   geom_boxplot(, outlier.colour = "red", alpha = 0.1) +
@@ -246,26 +283,20 @@ treino %>%
 treino %>%
   group_by(TX_RESP_Q09) %>%
   summarise(proporção = mean(abaixo_MT, na.rm = T)) %>%
-  ggplot(aes(x=TX_RESP_Q09 ,y=proporção)) +
-  geom_col()
+  ggplot(aes(x=TX_RESP_Q09 ,y=proporção)) + 
+  geom_col() 
 
 #Boxplot:
-treino %>%
+treino %>% 
   ggplot() +
   aes(x = TX_RESP_Q09, y = PROFICIENCIA_MT_SAEB, fill = TX_RESP_Q09, color = TX_RESP_Q09) +
   geom_boxplot(, outlier.colour = "red", alpha = 0.1) +
   theme_minimal()
 
-#INDICADOR SOCIO-ECONÔMICO
-resumo_variavel(treino, NU_TIPO_NIVEL_INSE)
+#-------------------
+#1.1.4 - Rotina
+#-------------------
 
-#Tipo de escola a partir do fundamental
-resumo_variavel(treino, TX_RESP_Q18)
-
-#Localização
-resumo_variavel(treino, ID_LOCALIZACAO)
-
-#1.1.3 - Rotina
 #Tempo utilizado para estudar
 resumo_variavel(treino, TX_RESP_Q21a)
 
@@ -278,7 +309,10 @@ resumo_variavel(treino, TX_RESP_Q21d)
 #tempo destinado para lazer
 resumo_variavel(treino, TX_RESP_Q21e)
 
-#1.1.4 - Opiniões sobre escola/professor
+#----------------------------------------
+#1.1.5 - Opiniões sobre escola/professor
+#----------------------------------------
+
 #Os professores desenvolvem trabalhos em grupo?
 resumo_variavel(treino, TX_RESP_Q22g)
 
@@ -290,3 +324,4 @@ resumo_variavel(treino, TX_RESP_Q23i)
 
 #Se sente seguro na escola
 resumo_variavel(treino, TX_RESP_Q23d)
+
