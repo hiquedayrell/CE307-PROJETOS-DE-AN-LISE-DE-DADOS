@@ -42,15 +42,15 @@ treino %>%
 
 #HISTOGRAMA
 treino %>%
-  ggplot() +
-  aes(x = PROFICIENCIA_MT_SAEB) +
+  ggplot() + 
+  aes(x = PROFICIENCIA_MT_SAEB) + 
   geom_histogram(color = "red",
                  fill = "salmon",
-                 bins = 42) +
+                 bins = 42) + 
   labs(x = "Proficiência em Matemática",
-       y = "Frequência") +
-  geom_vline(xintercept = 175, color = "red", linetype = "dashed", linewidth = 1) +
-  theme_minimal()
+       y = "Frequência") + 
+  geom_vline(xintercept = 175, color = "red", linetype = "dashed", linewidth = 1) + 
+  theme_minimal() 
 
 #Indicador Combinado
 treino %>%
@@ -69,6 +69,7 @@ treino %>%
     x = "Nota de Matemática",
     y = "Nota de Língua Portuguesa"
   )
+
 #------------------------------------------------------
 #1.1 Alunos abaixo do básico por categoria de variável:
 #------------------------------------------------------
@@ -88,7 +89,7 @@ resumo_variavel <- function(dados, variavel) {
 #-----------------------------------
 
 #Sexo 
-resumo_variavel(treino, TX_RESP_Q01)
+resumo_variavel(treino, TX_RESP_Q01) 
 
 #LP:
 #Colunas
@@ -173,8 +174,22 @@ treino %>%
   geom_boxplot(, outlier.colour = "red", alpha = 0.1) +
   theme_minimal()
 
-#IDADE
+#IDADE *
 resumo_variavel(treino, TX_RESP_Q02)
+
+treino %>%
+  mutate(TX_RESP_Q02 = case_when(
+    TX_RESP_Q02 %in% c("A") ~ "9 ou menos",
+    TX_RESP_Q02 %in% c("B", "C") ~ "10 e 11",  # ajuste conforme o que cada letra representa de fato
+    TX_RESP_Q02 %in% c("D", "E", "F") ~ "12 ou mais",
+    TRUE ~ NA_character_
+  )) %>%
+  group_by(TX_RESP_Q02) %>%
+  summarise(total = n(),
+            alunos_abaixo_LP = sum(abaixo_LP, na.rm = TRUE),
+            prop_LP = mean(abaixo_LP, na.rm = TRUE),
+            alunos_abaixo_MT = sum(abaixo_MT, na.rm = TRUE),
+            prop_MT = mean(abaixo_MT, na.rm = TRUE))
 
 #LP:
 #Boxplot:
@@ -192,26 +207,35 @@ treino %>%
   geom_boxplot(, outlier.colour = "red", alpha = 0.1) +
   theme_minimal()
 
-#REPROVAÇÃO
+#REPROVAÇÃO *
 resumo_variavel(treino, TX_RESP_Q19)
 
 #Já abandonou a escola, deixando de frequentar até o final do ano
 resumo_variavel(treino, TX_RESP_Q20)
 
-#Com que idade entrou na escola
+#Com que idade entrou na escola *
 resumo_variavel(treino, TX_RESP_Q17)
+
+#Deficiência 
+resumo_variavel(treino, TX_RESP_Q05a)
+
+#Austismo
+resumo_variavel(treino, TX_RESP_Q05b)
+
+#Altas habilidades
+resumo_variavel(treino, TX_RESP_Q05c)
 
 #---------------------------------------------------
 #1.1.2 - Ambiente que está inserido
 #---------------------------------------------------
 
-#MORA COM A MÃE
+#MORA COM A MÃE *
 resumo_variavel(treino, TX_RESP_Q07a)
 
-#MORA COM O PAI
+#MORA COM O PAI *
 resumo_variavel(treino, TX_RESP_Q07b)
 
-#INDICADOR SOCIO-ECONÔMICO
+#INDICADOR SOCIO-ECONÔMICO *
 resumo_variavel(treino, NU_TIPO_NIVEL_INSE)
 
 #Tipo de escola a partir do fundamental
@@ -220,14 +244,29 @@ resumo_variavel(treino, TX_RESP_Q18)
 #Localização
 resumo_variavel(treino, ID_LOCALIZACAO)
 
+#RUA ASFALTADA OU NÃO *
+resumo_variavel(treino, TX_RESP_Q11a)
+
+#POSSUI ÁGUA TRATADA
+resumo_variavel(treino, TX_RESP_Q11b)
+
+#POSSUI ILUMINAÇÃO *
+resumo_variavel(treino, TX_RESP_Q11c)
+
+#QNT DE CELULARES EM CASA *
+resumo_variavel(treino, TX_RESP_Q12g)
+
+#POSSUI WI-FI
+resumo_variavel(treino, TX_RESP_Q13a)
+
+#MEIO DE TRANSPORTE PARA IR PARA A ESCOLA
+resumo_variavel(treino, TX_RESP_Q16)
+
 #------------------------------------
 #1.1.3 - INFORMAÇÕES DOS RESPONSÁVEIS
 #------------------------------------
 
-#RESPONSÁVEIS INCENTIVAM A ESTUDAR:
-resumo_variavel(treino, TX_RESP_Q10c)
-
-#ESCOLARIDADE DA MÃE:
+#ESCOLARIDADE DA MÃE *
 resumo_variavel(treino, TX_RESP_Q08)
 
 #GRÁFICOS LP:
@@ -237,7 +276,7 @@ treino %>%
   summarise(proporção = mean(abaixo_LP, na.rm = T)) %>%
   ggplot(aes(x=TX_RESP_Q08 ,y=proporção)) + 
   geom_col() 
-
+View(treino)
 #Boxplot:
 treino %>% 
   ggplot() +
@@ -260,7 +299,7 @@ treino %>%
   geom_boxplot(, outlier.colour = "red", alpha = 0.1) +
   theme_minimal()
 
-#ESCOLARIDADE DO PAI:
+#ESCOLARIDADE DO PAI *
 resumo_variavel(treino, TX_RESP_Q09)
 
 #GRÁFICOS LP:
@@ -293,12 +332,27 @@ treino %>%
   geom_boxplot(, outlier.colour = "red", alpha = 0.1) +
   theme_minimal()
 
-#-------------------
+#RESPONSÁVEIS COSTUMAM LER EM CASA
+resumo_variavel(treino, TX_RESP_Q10a)
+
+#RESPONSÁVEIS INCENTIVAM IR A AULA *
+resumo_variavel(treino, TX_RESP_Q10e)
+
+#RESPONSÁVEIS VÃO NAS REUNIÕES *
+resumo_variavel(treino, TX_RESP_Q10f)
+
+#RESPONSÁVEIS INCENTIVAM A ESTUDAR *
+resumo_variavel(treino, TX_RESP_Q10c)
+
+#--------------
 #1.1.4 - Rotina
-#-------------------
+#--------------
 
 #Tempo utilizado para estudar
 resumo_variavel(treino, TX_RESP_Q21a)
+
+#Tempo utilizado para fazer cursos extracurriculares 
+resumo_variavel(treino, TX_RESP_Q21b)
 
 #Tempo usado para trabalhar em casa
 resumo_variavel(treino, TX_RESP_Q21c)
@@ -313,15 +367,19 @@ resumo_variavel(treino, TX_RESP_Q21e)
 #1.1.5 - Opiniões sobre escola/professor
 #----------------------------------------
 
-#Os professores desenvolvem trabalhos em grupo?
+#Os professores desenvolvem trabalhos em grupo *
 resumo_variavel(treino, TX_RESP_Q22g)
 
-#Se interessa ou não pelo conteúdo
+#Se interessa ou não pelo conteúdo *
 resumo_variavel(treino, TX_RESP_Q23a)
 
-#Professores motivam os alunos a continuar os estudos
+#Professores motivam os alunos a continuar os estudos *
 resumo_variavel(treino, TX_RESP_Q23i)
 
 #Se sente seguro na escola
 resumo_variavel(treino, TX_RESP_Q23d)
+
+#---------------------------------------------------------------------
+#1.2 — Análises multivariadas/cruzamentos entre variáveis explicativas
+#---------------------------------------------------------------------
 
