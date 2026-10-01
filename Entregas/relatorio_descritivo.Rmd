@@ -163,19 +163,18 @@ tribble(
 
 ## Variáveis resposta
 
-A proficiência do Saeb foi convertida em duas variáveis dicotômicas, a partir dos cortes de nível de aprendizado propostos por Soares (2009) para o 5º ano:
+A proficiência do Saeb foi convertida em duas variáveis dicotômicas, a partir dos cortes de nível de aprendizado propostos pelo professor, para o 5º ano:
 
 | Nível de aprendizado | Língua Portuguesa | Matemática        |
 |----------------------|-------------------|-------------------|
-| Abaixo do básico | até 150       | até 175       |
+| Abaixo do básico     | até 150           | até 175           |
 | Básico               | mais de 150 a 200 | mais de 175 a 200 |
 | Adequado             | mais de 200 a 250 | mais de 200 a 225 |
 | Avançado             | mais de 250       | mais de 225       |
 
 - `abaixo_LP` = 1 se a proficiência em Língua Portuguesa for menor ou igual a 150, e 0 caso contrário;
-- `abaixo_MT` = 1 se a proficiência em Matemática for menor ou igual a 175, e 0 caso contrário.
 
-Segundo Soares (2009), espera-se que no máximo 5% dos alunos estejam abaixo do nível básico.
+- `abaixo_MT` = 1 se a proficiência em Matemática for menor ou igual a 175, e 0 caso contrário.
 
 ## Bases de treino e teste
 
@@ -190,11 +189,11 @@ Como a amostra Brasil contém poucos alunos de Curitiba, foi construída uma bas
 Toda a análise foi feita em R (pacotes `tidyverse` e `scales`), com o código versionado no GitHub. Os scripts ficam na pasta `R/` e foram numerados na ordem em que as etapas da análise acontecem: como os arquivos são exibidos em ordem numérica e alfabética, a própria listagem da pasta mostra a sequência de execução, e cada script usa as bases geradas pelos anteriores. Rodando-os nessa ordem, todas as bases e resultados são reproduzidos a partir dos microdados do Inep.
 
 | Script | Etapa | Produz |
-|------------------------|------------------------|------------------------|
+|----|----|----|
 | `00_codebook.R` | Documentação das variáveis a partir do dicionário do Inep | `docs/codebook.csv`, `docs/codebook.md` |
 | `01 Preparação Base .R` | Amostra estratificada por UF, filtros de qualidade e variáveis resposta | `data/amostra_limpa.csv` |
 | `02 Separação bases.R` | Divisão em treino (90%) e teste (10%) | `data/treino.csv`, `data/teste.csv` |
-| `03 Teste viés.R` | Diagnóstico do efeito dos filtros na base completa | resultados no console |
+| `03 Teste viés.R` | Diagnóstico do efeito dos filtros na base completa | resultados no console, para identificar esse viés |
 | `04 Descritiva Geral.R` | Análise descritiva da amostra Brasil | tabelas e gráficos |
 | `05 Base curitiba.R` | Base com todos os alunos de Curitiba, com os mesmos filtros | `data/curitiba_limpa.csv` |
 | `06 Comparação Curitiba.R` | Comparação Curitiba × Brasil | tabelas e gráficos |
@@ -585,24 +584,3 @@ fatores %>%
 ```
 
 > Rascunho para revisão do grupo. Todas as variáveis selecionadas apresentam associação estatisticamente significativa com estar abaixo do nível básico, mas de intensidade fraca (V entre 0,03 e 0,19), o que é esperado quando o evento estudado é pouco frequente. As associações mais fortes estão na trajetória escolar (reprovação e idade) e no nível socioeconômico (INSE, bens e escolaridade da mãe), seguidas do tempo de lazer. O envolvimento dos pais aparece com as associações mais fracas. Como essas medidas olham cada variável isoladamente, parte delas pode refletir o efeito de outras (por exemplo, do nível socioeconômico); a separação desses efeitos será feita na etapa de modelagem.
-
-# Síntese preliminar
-
-> Rascunho para revisão do grupo.
-
-1.  Na amostra Brasil, `r pct(geral_lp)` dos alunos do 5º ano estão abaixo do nível básico em Língua Portuguesa e `r pct(geral_mt)` em Matemática, acima da expectativa de 5% — e esses valores provavelmente subestimam a realidade, devido ao filtro de questionário completo.
-2.  Curitiba apresenta desempenho superior ao do Brasil, mas grande parte dessa diferença acompanha o perfil socioeconômico mais alto de seus alunos.
-3.  Os fatores mais associados a estar abaixo do básico são a reprovação, a distorção idade-série e o nível socioeconômico.
-
-# Próximos passos
-
-- Selecionar as análises e visualizações mais relevantes para a versão final.
-- Verificar se os principais fatores continuam associados ao desempenho entre alunos de mesmo nível socioeconômico.
-- Ajustar modelos de regressão logística para `abaixo_LP` e `abaixo_MT`, avaliando-os na base de teste.
-
-# Referências
-
-> Completar com as referências completas usadas pelo grupo.
-
-- INEP. *Microdados do Saeb 2023*. Brasília: Inep. Disponível em: <https://download.inep.gov.br/microdados/microdados_saeb_2023.zip>.
-- SOARES, J. F. (2009) — fonte do Quadro 1 de níveis de aprendizado; completar a referência.
