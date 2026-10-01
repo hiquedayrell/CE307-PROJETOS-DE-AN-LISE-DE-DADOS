@@ -87,31 +87,29 @@ geral_mt <- mean(treino$abaixo_MT)
 
 # Introdução
 
-> **Rascunho para revisão do grupo.**
-
 O Sistema de Avaliação da Educação Básica (Saeb), conduzido pelo Inep, avalia periodicamente o aprendizado dos estudantes brasileiros em Língua Portuguesa e Matemática. Além das provas, os alunos respondem a um questionário sobre seu perfil, sua família, sua rotina e sua percepção da escola, o que permite relacionar o desempenho a fatores de contexto.
 
-Este trabalho, desenvolvido no âmbito do Eixo 4 — Educação Básica Municipal, em parceria com a Secretaria Municipal de Educação de Curitiba (SME), utiliza os microdados do Saeb 2023 para os alunos do 5º ano do Ensino Fundamental. O foco está nos alunos com desempenho **abaixo do nível básico**, isto é, que não atingiram o mínimo de aprendizado esperado para a etapa.
+Este trabalho, desenvolvido no âmbito do Eixo 4: Educação Básica Municipal, em parceria com a Secretaria Municipal de Educação de Curitiba (SME), utiliza os microdados do Saeb 2023 para os alunos do 5º ano do Ensino Fundamental. O foco está nos alunos com desempenho abaixo do nível básico, isto é, que não atingiram o mínimo de aprendizado esperado para a etapa.
 
 As perguntas que orientam a análise são:
 
-1. Qual a proporção de alunos do 5º ano abaixo do nível básico em Língua Portuguesa e em Matemática?
-2. Quais características dos alunos, de suas famílias, de sua rotina e de sua relação com a escola estão associadas a estar abaixo do nível básico?
-3. Como Curitiba se compara ao Brasil nesses aspectos?
+1.  Qual a proporção de alunos do 5º ano abaixo do nível básico em Língua Portuguesa e em Matemática?
+2.  Quais características dos alunos, de suas famílias, de sua rotina e de sua relação com a escola estão associadas a estar abaixo do nível básico?
+3.  Como Curitiba se compara ao Brasil nesses aspectos? (A ser revisada pelo professor e André)
 
 Este relatório parcial apresenta a etapa descritiva. As associações identificadas aqui servirão de base para a etapa seguinte, de modelagem por regressão logística.
 
 # Dados e metodologia
 
-> **Rascunho para revisão do grupo.**
+> Rascunho para revisão do grupo.
 
 ## Fonte dos dados
 
-Foram utilizados os microdados do Saeb 2023 disponibilizados pelo Inep, arquivo `TS_ALUNO_5EF`, com uma linha por aluno do 5º ano: **2.442.143 alunos** e 152 variáveis, entre identificação, controle da aplicação, proficiências e as respostas ao questionário do aluno. A descrição de todas as variáveis está no codebook do projeto (`docs/codebook.md`), gerado a partir do dicionário oficial do Inep.
+Foram utilizados os microdados do Saeb 2023 disponibilizados pelo Inep, arquivo `TS_ALUNO_5EF`, com uma linha por aluno do 5º ano: 2.442.143 alunos e 152 variáveis, entre identificação, controle da aplicação, proficiências e as respostas ao questionário do aluno. A descrição de todas as variáveis está no codebook do projeto (`docs/codebook.md`), gerado a partir do dicionário oficial do Inep.
 
 ## Amostra Brasil
 
-Pelo tamanho da base, foi sorteada uma **amostra estratificada por Unidade da Federação**, com alocação proporcional ao número de alunos de cada UF, totalizando 32.000 alunos. O sorteio usou semente fixa (`set.seed(123)`) para garantir a reprodutibilidade.
+Pelo tamanho da base, foi sorteada uma amostra estratificada por Unidade da Federação, com alocação proporcional ao número de alunos de cada UF, totalizando 32.000 alunos. Escolhemos utilizar a proporção de alunos por UF na base e não uma proporção estadual populacional. Utilizamos semente fixa (`set.seed(123)`) para garantir a reprodutibilidade da mesma amostra.
 
 ## Filtros de qualidade
 
@@ -120,9 +118,9 @@ Foram mantidos apenas os alunos que:
 - tinham situação consistente com o Censo Escolar;
 - estiveram presentes e preencheram as provas de Língua Portuguesa e Matemática;
 - tiveram proficiência calculada nas duas disciplinas;
-- preencheram o questionário do aluno e **responderam a todas as suas 70 questões**, sem respostas em branco ou inválidas.
+- preencheram o questionário do aluno e responderam a todas as suas 70 questões, sem respostas em branco ou inválidas.
 
-Após os filtros, a amostra Brasil ficou com **10.068 alunos**.
+Após os filtros, a amostra Brasil ficou com 10.068 alunos. (Foi escolhido o 32000 para sobrar essa quantidade)
 
 ### Efeito dos filtros na base completa
 
@@ -149,7 +147,7 @@ tribble(
 
 ### Limitação: viés do questionário completo
 
-A exigência de questionário completo é o filtro mais restritivo e **não é neutra**: os alunos excluídos por ela têm desempenho inferior e uma proporção bem maior de alunos abaixo do nível básico. Assim, as proporções apresentadas neste relatório **tendem a subestimar** a parcela real de alunos abaixo do básico. O grupo optou por manter o filtro, aplicando a mesma regra a Brasil e Curitiba para que a comparação entre eles seja justa.
+A exigência de questionário completo é o filtro mais restritivo: os alunos excluídos por ela têm desempenho inferior e uma proporção bem maior de alunos abaixo do nível básico. Assim, as proporções apresentadas neste relatório tendem a subestimar a parcela real de alunos abaixo do básico. Nós optamos por manter o filtro, aplicando a mesma regra a Brasil e Curitiba para que a comparação entre eles seja justa.
 
 ```{r vies}
 tribble(
@@ -165,34 +163,34 @@ tribble(
 
 ## Variáveis resposta
 
-A proficiência do Saeb foi convertida em duas variáveis **dicotômicas**, a partir dos cortes de nível de aprendizado propostos por Soares (2009) para o 5º ano:
+A proficiência do Saeb foi convertida em duas variáveis dicotômicas, a partir dos cortes de nível de aprendizado propostos por Soares (2009) para o 5º ano:
 
-| Nível de aprendizado | Língua Portuguesa | Matemática |
-|---|---|---|
-| **Abaixo do básico** | **até 150** | **até 175** |
-| Básico | mais de 150 a 200 | mais de 175 a 200 |
-| Adequado | mais de 200 a 250 | mais de 200 a 225 |
-| Avançado | mais de 250 | mais de 225 |
+| Nível de aprendizado | Língua Portuguesa | Matemática        |
+|----------------------|-------------------|-------------------|
+| Abaixo do básico | até 150       | até 175       |
+| Básico               | mais de 150 a 200 | mais de 175 a 200 |
+| Adequado             | mais de 200 a 250 | mais de 200 a 225 |
+| Avançado             | mais de 250       | mais de 225       |
 
 - `abaixo_LP` = 1 se a proficiência em Língua Portuguesa for menor ou igual a 150, e 0 caso contrário;
 - `abaixo_MT` = 1 se a proficiência em Matemática for menor ou igual a 175, e 0 caso contrário.
 
-Segundo Soares (2009), espera-se que no máximo **5%** dos alunos estejam abaixo do nível básico.
+Segundo Soares (2009), espera-se que no máximo 5% dos alunos estejam abaixo do nível básico.
 
 ## Bases de treino e teste
 
-Pensando na etapa de modelagem, a amostra Brasil foi dividida em **treino (90%, `r num(nrow(treino))` alunos)** e **teste (10%, 1.006 alunos)**, com sorteio estratificado pelas duas variáveis resposta. **Todas as análises deste relatório usam apenas a base de treino**; a base de teste fica reservada para a avaliação final do modelo.
+Pensando na etapa de modelagem, a amostra Brasil foi dividida em treino (90%, `r num(nrow(treino))` alunos) e teste (10%, 1.006 alunos), com sorteio estratificado pelas duas variáveis resposta. Todas as análises deste relatório usam apenas a base de treino; a base de teste fica reservada para a avaliação final do modelo.
 
 ## Recorte Curitiba
 
-Como a amostra Brasil contém poucos alunos de Curitiba, foi construída uma base separada com **todos** os alunos da cidade (UF = Paraná e área = capital), aplicando os mesmos filtros: **`r num(nrow(curitiba))` alunos** em `r n_distinct(curitiba$ID_ESCOLA)` escolas, `r pct(mean(curitiba$IN_PUBLICA))` delas públicas. A base não permite distinguir escolas municipais de estaduais.
+Como a amostra Brasil contém poucos alunos de Curitiba, foi construída uma base separada com todos os alunos da cidade (UF = Paraná e área = capital), aplicando os mesmos filtros: `r num(nrow(curitiba))` alunos em `r n_distinct(curitiba$ID_ESCOLA)` escolas, `r pct(mean(curitiba$IN_PUBLICA))` delas públicas. A base não permite distinguir escolas municipais de estaduais.
 
 ## Ferramentas e organização do código
 
-Toda a análise foi feita em R (pacotes `tidyverse` e `scales`), com o código versionado no GitHub. Os scripts ficam na pasta `R/` e foram **numerados na ordem em que as etapas da análise acontecem**: como os arquivos são exibidos em ordem numérica e alfabética, a própria listagem da pasta mostra a sequência de execução, e cada script usa as bases geradas pelos anteriores. Rodando-os nessa ordem, todas as bases e resultados são reproduzidos a partir dos microdados do Inep.
+Toda a análise foi feita em R (pacotes `tidyverse` e `scales`), com o código versionado no GitHub. Os scripts ficam na pasta `R/` e foram numerados na ordem em que as etapas da análise acontecem: como os arquivos são exibidos em ordem numérica e alfabética, a própria listagem da pasta mostra a sequência de execução, e cada script usa as bases geradas pelos anteriores. Rodando-os nessa ordem, todas as bases e resultados são reproduzidos a partir dos microdados do Inep.
 
 | Script | Etapa | Produz |
-|---|---|---|
+|------------------------|------------------------|------------------------|
 | `00_codebook.R` | Documentação das variáveis a partir do dicionário do Inep | `docs/codebook.csv`, `docs/codebook.md` |
 | `01 Preparação Base .R` | Amostra estratificada por UF, filtros de qualidade e variáveis resposta | `data/amostra_limpa.csv` |
 | `02 Separação bases.R` | Divisão em treino (90%) e teste (10%) | `data/treino.csv`, `data/teste.csv` |
@@ -243,7 +241,7 @@ treino %>%
 
 ## Alunos abaixo do nível básico
 
-Na amostra Brasil, **`r pct(geral_lp)`** dos alunos estão abaixo do nível básico em Língua Portuguesa e **`r pct(geral_mt)`** em Matemática, ambos acima da expectativa de 5%.
+Na amostra Brasil, `r pct(geral_lp)` dos alunos estão abaixo do nível básico em Língua Portuguesa e `r pct(geral_mt)` em Matemática, ambos acima da expectativa de 5%.
 
 ```{r combinado}
 treino %>%
@@ -272,7 +270,7 @@ ggplot(treino, aes(PROFICIENCIA_MT_SAEB, PROFICIENCIA_LP_SAEB)) +
 
 ## Alunos abaixo do básico por característica
 
-Para cada variável são apresentados: a pergunta do questionário, a distribuição dos alunos e a proporção abaixo do nível básico em cada categoria, um gráfico de barras dessa proporção (a linha tracejada é a média geral) e o boxplot das notas (a linha tracejada é o corte do nível básico). As variáveis marcadas com **★** foram selecionadas pelo grupo como mais relevantes.
+Para cada variável são apresentados: a pergunta do questionário, a distribuição dos alunos e a proporção abaixo do nível básico em cada categoria, um gráfico de barras dessa proporção (a linha tracejada é a média geral) e o boxplot das notas (a linha tracejada é o corte do nível básico). As variáveis marcadas com ★ foram selecionadas pelo grupo como mais relevantes.
 
 ```{r funcao-variavel}
 analisa_variavel <- function(var, titulo, rotulo_chunk = var) {
@@ -345,7 +343,7 @@ analisa_variavel("TX_RESP_Q05c", "Altas habilidades")
 
 ### Idade agrupada
 
-Agrupando as idades, fica mais claro o efeito da **distorção idade-série**: alunos com 12 anos ou mais, que em geral estão atrasados em relação à série, concentram uma proporção muito maior de alunos abaixo do básico.
+Agrupando as idades, fica mais claro o efeito da distorção idade-série: alunos com 12 anos ou mais, que em geral estão atrasados em relação à série, concentram uma proporção muito maior de alunos abaixo do básico.
 
 ```{r idade-agrupada}
 treino %>%
@@ -431,7 +429,7 @@ cwb <- filter(resumo_grupo, grupo == "Curitiba")
 
 ## Visão geral
 
-Os alunos de Curitiba têm, em média, notas cerca de 10 pontos mais altas que os do Brasil nas duas disciplinas, e a proporção abaixo do nível básico é menor: **`r pct(cwb$abaixo_LP)`** em LP, dentro da expectativa de 5%, e **`r pct(cwb$abaixo_MT)`** em MT.
+Os alunos de Curitiba têm, em média, notas cerca de 10 pontos mais altas que os do Brasil nas duas disciplinas, e a proporção abaixo do nível básico é menor: `r pct(cwb$abaixo_LP)` em LP, dentro da expectativa de 5%, e `r pct(cwb$abaixo_MT)` em MT.
 
 ```{r comp-tabela}
 base %>%
@@ -464,7 +462,7 @@ base %>%
 
 ## Trajetória escolar e escolaridade da família
 
-Os gráficos abaixo comparam a proporção de alunos abaixo do nível básico em Curitiba e no Brasil segundo o **número de reprovações** do aluno e a **escolaridade da mãe**. Categorias com menos de 30 alunos aparecem como "n < 30".
+Os gráficos abaixo comparam a proporção de alunos abaixo do nível básico em Curitiba e no Brasil segundo o número de reprovações do aluno e a escolaridade da mãe. Categorias com menos de 30 alunos aparecem como "n \< 30".
 
 ```{r funcao-comparacao}
 compara_abaixo <- function(var, minimo = 30) {
@@ -503,15 +501,15 @@ compara_abaixo("TX_RESP_Q08")
 
 ## Principais diferenças
 
-> **Rascunho para revisão do grupo.**
+> Rascunho para revisão do grupo.
 
-- **Reprovação:** é fortemente associada a estar abaixo do básico nos dois grupos, mas em Curitiba a proporção entre os reprovados é bem menor que no Brasil (cerca de metade entre os reprovados uma vez).
-- **Escolaridade da mãe:** em Curitiba, filhos de mães com baixa escolaridade apresentam proporções abaixo do básico semelhantes ou maiores que no Brasil, apesar do desempenho médio superior, o que pode indicar desigualdade interna. Esses grupos são pequenos e o resultado deve ser visto com cautela.
-- **Composição socioeconômica:** os alunos de Curitiba concentram-se nos níveis mais altos do INSE, e parte da vantagem da cidade parece acompanhar esse perfil (ver `R/06 Comparação Curitiba.R`).
+- Reprovação: é fortemente associada a estar abaixo do básico nos dois grupos, mas em Curitiba a proporção entre os reprovados é bem menor que no Brasil (cerca de metade entre os reprovados uma vez).
+- Escolaridade da mãe: em Curitiba, filhos de mães com baixa escolaridade apresentam proporções abaixo do básico semelhantes ou maiores que no Brasil, apesar do desempenho médio superior, o que pode indicar desigualdade interna. Esses grupos são pequenos e o resultado deve ser visto com cautela.
+- Composição socioeconômica: os alunos de Curitiba concentram-se nos níveis mais altos do INSE, e parte da vantagem da cidade parece acompanhar esse perfil (ver `R/06 Comparação Curitiba.R`).
 
 # Fatores associados a estar abaixo do nível básico
 
-Para comparar a força da associação de cada variável selecionada pelo grupo com estar abaixo do nível básico, foi usado o **V de Cramér**, calculado a partir do teste qui-quadrado de independência. Ele varia de 0 (nenhuma associação) a 1 (associação perfeita); como referência usual, valores próximos de 0,1 indicam associação fraca e próximos de 0,3, moderada.
+Para comparar a força da associação de cada variável selecionada pelo grupo com estar abaixo do nível básico, foi usado o V de Cramér, calculado a partir do teste qui-quadrado de independência. Ele varia de 0 (nenhuma associação) a 1 (associação perfeita); como referência usual, valores próximos de 0,1 indicam associação fraca e próximos de 0,3, moderada.
 
 ```{r fatores}
 nomes_sel <- tribble(
@@ -575,7 +573,7 @@ fatores %>%
   knitr::kable(align = "llrrrr")
 ```
 
-**Força média da associação por bloco:**
+Força média da associação por bloco:
 
 ```{r fatores-blocos}
 fatores %>%
@@ -586,25 +584,25 @@ fatores %>%
   knitr::kable(align = "lrrr")
 ```
 
-> **Rascunho para revisão do grupo.** Todas as variáveis selecionadas apresentam associação estatisticamente significativa com estar abaixo do nível básico, mas de intensidade fraca (V entre 0,03 e 0,19), o que é esperado quando o evento estudado é pouco frequente. As associações mais fortes estão na **trajetória escolar** (reprovação e idade) e no **nível socioeconômico** (INSE, bens e escolaridade da mãe), seguidas do **tempo de lazer**. O envolvimento dos pais aparece com as associações mais fracas. Como essas medidas olham cada variável isoladamente, parte delas pode refletir o efeito de outras (por exemplo, do nível socioeconômico); a separação desses efeitos será feita na etapa de modelagem.
+> Rascunho para revisão do grupo. Todas as variáveis selecionadas apresentam associação estatisticamente significativa com estar abaixo do nível básico, mas de intensidade fraca (V entre 0,03 e 0,19), o que é esperado quando o evento estudado é pouco frequente. As associações mais fortes estão na trajetória escolar (reprovação e idade) e no nível socioeconômico (INSE, bens e escolaridade da mãe), seguidas do tempo de lazer. O envolvimento dos pais aparece com as associações mais fracas. Como essas medidas olham cada variável isoladamente, parte delas pode refletir o efeito de outras (por exemplo, do nível socioeconômico); a separação desses efeitos será feita na etapa de modelagem.
 
 # Síntese preliminar
 
-> **Rascunho para revisão do grupo.**
+> Rascunho para revisão do grupo.
 
-1. Na amostra Brasil, `r pct(geral_lp)` dos alunos do 5º ano estão abaixo do nível básico em Língua Portuguesa e `r pct(geral_mt)` em Matemática, acima da expectativa de 5% — e esses valores provavelmente subestimam a realidade, devido ao filtro de questionário completo.
-2. Curitiba apresenta desempenho superior ao do Brasil, mas grande parte dessa diferença acompanha o perfil socioeconômico mais alto de seus alunos.
-3. Os fatores mais associados a estar abaixo do básico são a reprovação, a distorção idade-série e o nível socioeconômico.
+1.  Na amostra Brasil, `r pct(geral_lp)` dos alunos do 5º ano estão abaixo do nível básico em Língua Portuguesa e `r pct(geral_mt)` em Matemática, acima da expectativa de 5% — e esses valores provavelmente subestimam a realidade, devido ao filtro de questionário completo.
+2.  Curitiba apresenta desempenho superior ao do Brasil, mas grande parte dessa diferença acompanha o perfil socioeconômico mais alto de seus alunos.
+3.  Os fatores mais associados a estar abaixo do básico são a reprovação, a distorção idade-série e o nível socioeconômico.
 
 # Próximos passos
 
 - Selecionar as análises e visualizações mais relevantes para a versão final.
-- Verificar se os principais fatores continuam associados ao desempenho **entre alunos de mesmo nível socioeconômico**.
+- Verificar se os principais fatores continuam associados ao desempenho entre alunos de mesmo nível socioeconômico.
 - Ajustar modelos de regressão logística para `abaixo_LP` e `abaixo_MT`, avaliando-os na base de teste.
 
 # Referências
 
-> **Completar com as referências completas usadas pelo grupo.**
+> Completar com as referências completas usadas pelo grupo.
 
-- INEP. *Microdados do Saeb 2023*. Brasília: Inep. Disponível em: https://download.inep.gov.br/microdados/microdados_saeb_2023.zip.
+- INEP. *Microdados do Saeb 2023*. Brasília: Inep. Disponível em: <https://download.inep.gov.br/microdados/microdados_saeb_2023.zip>.
 - SOARES, J. F. (2009) — fonte do Quadro 1 de níveis de aprendizado; completar a referência.
