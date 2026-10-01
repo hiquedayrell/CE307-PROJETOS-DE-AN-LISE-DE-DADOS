@@ -1,0 +1,610 @@
+---
+title: "Desempenho dos alunos do 5º ano no Saeb 2023: análise descritiva"
+subtitle: "Eixo 4 — Educação Básica Municipal (parceria SME Curitiba) · Projetos de Análise de Dados 2026/2"
+date: "`r format(Sys.Date(), '%d/%m/%Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    number_sections: true
+    theme: flatly
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
+                      fig.width = 9, fig.height = 4, dpi = 110)
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+```
+
+```{r preparacao}
+library(tidyverse)
+library(scales)
+
+treino   <- read.csv("data/treino.csv")
+curitiba <- read.csv("data/curitiba_limpa.csv")
+codebook <- read.csv("docs/codebook.csv", encoding = "UTF-8")
+
+cor_lp <- "#2E6F9E"
+cor_mt <- "#D17A22"
+cores        <- c("Língua Portuguesa" = cor_lp, "Matemática" = cor_mt)
+cores_grupo  <- c(Brasil = "#8C9BAB", Curitiba = "#1B7F5B")
+cortes <- tibble(disciplina = c("Língua Portuguesa", "Matemática"), corte = c(150, 175))
+
+theme_set(theme_minimal(base_size = 12) +
+            theme(panel.grid.minor = element_blank(),
+                  panel.spacing = unit(2, "lines"),
+                  strip.text = element_text(face = "bold", size = 12),
+                  legend.position = "top"))
+
+pct <- label_percent(accuracy = 0.1, decimal.mark = ",", big.mark = ".")
+num <- function(x, d = 0) number(x, accuracy = 10^-d, decimal.mark = ",", big.mark = ".")
+eixo_pct <- label_percent(decimal.mark = ",")
+
+selecionadas <- c("TX_RESP_Q02", "TX_RESP_Q19", "TX_RESP_Q17", "TX_RESP_Q07a", "TX_RESP_Q07b",
+                  "NU_TIPO_NIVEL_INSE", "TX_RESP_Q08", "TX_RESP_Q09", "TX_RESP_Q12g",
+                  "TX_RESP_Q11a", "TX_RESP_Q11c", "TX_RESP_Q10c", "TX_RESP_Q10e", "TX_RESP_Q10f",
+                  "TX_RESP_Q21d", "TX_RESP_Q21e", "TX_RESP_Q22g", "TX_RESP_Q23a", "TX_RESP_Q23i",
+                  "TX_RESP_Q23h")
+
+rotulos <- function(var) {
+  cats   <- codebook$categorias[codebook$variavel == var]
+  partes <- str_split(cats, ";\\s*")[[1]]
+  m      <- str_match(partes, "^\\s*(\\S+)\\s*[=-]\\s*(.*)$")
+  setNames(str_remove(str_trim(m[, 3]), "\\.$"), m[, 2])
+}
+
+pergunta <- function(var) {
+  codebook$descricao[codebook$variavel == var] %>%
+    str_remove("\\s*\\(para melhor entendimento.*$")
+}
+
+com_rotulo <- function(dados, var) {
+  lab     <- rotulos(var)
+  valores <- as.character(dados[[var]])
+  niveis  <- lab[names(lab) %in% valores]
+  dados %>%
+    mutate(categoria = factor(coalesce(lab[valores], "Sem informação"),
+                              levels = c(unname(niveis), "Sem informação")) %>%
+             fct_drop())
+}
+
+imprime_grafico <- function(p, rotulo, altura) {
+  env <- new.env()
+  env$p <- p
+  cat(knitr::knit_child(text = c(
+    sprintf("```{r %s, fig.height = %.1f, echo = FALSE}", rotulo, altura),
+    "print(p)",
+    "```"
+  ), envir = env, quiet = TRUE))
+}
+
+altura_por <- function(n_cat) max(2.4, 0.45 * n_cat + 1.4)
+
+geral_lp <- mean(treino$abaixo_LP)
+geral_mt <- mean(treino$abaixo_MT)
+```
+
+# Introdução
+
+> **Rascunho para revisão do grupo.**
+
+O Sistema de Avaliação da Educação Básica (Saeb), conduzido pelo Inep, avalia periodicamente o aprendizado dos estudantes brasileiros em Língua Portuguesa e Matemática. Além das provas, os alunos respondem a um questionário sobre seu perfil, sua família, sua rotina e sua percepção da escola, o que permite relacionar o desempenho a fatores de contexto.
+
+Este trabalho, desenvolvido no âmbito do Eixo 4 — Educação Básica Municipal, em parceria com a Secretaria Municipal de Educação de Curitiba (SME), utiliza os microdados do Saeb 2023 para os alunos do 5º ano do Ensino Fundamental. O foco está nos alunos com desempenho **abaixo do nível básico**, isto é, que não atingiram o mínimo de aprendizado esperado para a etapa.
+
+As perguntas que orientam a análise são:
+
+1. Qual a proporção de alunos do 5º ano abaixo do nível básico em Língua Portuguesa e em Matemática?
+2. Quais características dos alunos, de suas famílias, de sua rotina e de sua relação com a escola estão associadas a estar abaixo do nível básico?
+3. Como Curitiba se compara ao Brasil nesses aspectos?
+
+Este relatório parcial apresenta a etapa descritiva. As associações identificadas aqui servirão de base para a etapa seguinte, de modelagem por regressão logística.
+
+# Dados e metodologia
+
+> **Rascunho para revisão do grupo.**
+
+## Fonte dos dados
+
+Foram utilizados os microdados do Saeb 2023 disponibilizados pelo Inep, arquivo `TS_ALUNO_5EF`, com uma linha por aluno do 5º ano: **2.442.143 alunos** e 152 variáveis, entre identificação, controle da aplicação, proficiências e as respostas ao questionário do aluno. A descrição de todas as variáveis está no codebook do projeto (`docs/codebook.md`), gerado a partir do dicionário oficial do Inep.
+
+## Amostra Brasil
+
+Pelo tamanho da base, foi sorteada uma **amostra estratificada por Unidade da Federação**, com alocação proporcional ao número de alunos de cada UF, totalizando 32.000 alunos. O sorteio usou semente fixa (`set.seed(123)`) para garantir a reprodutibilidade.
+
+## Filtros de qualidade
+
+Foram mantidos apenas os alunos que:
+
+- tinham situação consistente com o Censo Escolar;
+- estiveram presentes e preencheram as provas de Língua Portuguesa e Matemática;
+- tiveram proficiência calculada nas duas disciplinas;
+- preencheram o questionário do aluno e **responderam a todas as suas 70 questões**, sem respostas em branco ou inválidas.
+
+Após os filtros, a amostra Brasil ficou com **10.068 alunos**.
+
+### Efeito dos filtros na base completa
+
+A tabela abaixo mostra quantos alunos cada filtro remove quando aplicado à base completa do Inep (`R/03`).
+
+```{r funil}
+tribble(
+  ~Etapa,                               ~Alunos,
+  "Base original",                      2442143,
+  "Situação consistente no Censo",      2433404,
+  "Presente nas provas de LP e MT",     2096324,
+  "Preencheu as provas de LP e MT",     2081291,
+  "Tem proficiência em LP e MT",        2081287,
+  "Preencheu o questionário",           2063719,
+  "Respondeu todas as 70 questões",      761673
+) %>%
+  mutate(
+    Removidos = lag(Alunos) - Alunos,
+    `% restante` = pct(Alunos / first(Alunos)),
+    across(c(Alunos, Removidos), \(x) if_else(is.na(x), "", num(x)))
+  ) %>%
+  knitr::kable(align = "lrrr")
+```
+
+### Limitação: viés do questionário completo
+
+A exigência de questionário completo é o filtro mais restritivo e **não é neutra**: os alunos excluídos por ela têm desempenho inferior e uma proporção bem maior de alunos abaixo do nível básico. Assim, as proporções apresentadas neste relatório **tendem a subestimar** a parcela real de alunos abaixo do básico. O grupo optou por manter o filtro, aplicando a mesma regra a Brasil e Curitiba para que a comparação entre eles seja justa.
+
+```{r vies}
+tribble(
+  ~Grupo,                                         ~Alunos,  ~`Média LP`, ~`Média MT`, ~`Abaixo do básico LP`, ~`Abaixo do básico MT`,
+  "Brasil — questionário completo (mantidos)",    761673,   224,         236,         0.079,                  0.113,
+  "Brasil — alguma questão em branco (excluídos)", 1302046, 200,         210,         0.195,                  0.270,
+  "Curitiba — questionário completo (mantidos)",  4452,     233,         246,         0.042,                  0.068,
+  "Curitiba — todos com nota válida",             13973,    219,         231,         0.090,                  0.128
+) %>%
+  mutate(Alunos = num(Alunos), across(starts_with("Abaixo"), pct)) %>%
+  knitr::kable(align = "lrrrrr")
+```
+
+## Variáveis resposta
+
+A proficiência do Saeb foi convertida em duas variáveis **dicotômicas**, a partir dos cortes de nível de aprendizado propostos por Soares (2009) para o 5º ano:
+
+| Nível de aprendizado | Língua Portuguesa | Matemática |
+|---|---|---|
+| **Abaixo do básico** | **até 150** | **até 175** |
+| Básico | mais de 150 a 200 | mais de 175 a 200 |
+| Adequado | mais de 200 a 250 | mais de 200 a 225 |
+| Avançado | mais de 250 | mais de 225 |
+
+- `abaixo_LP` = 1 se a proficiência em Língua Portuguesa for menor ou igual a 150, e 0 caso contrário;
+- `abaixo_MT` = 1 se a proficiência em Matemática for menor ou igual a 175, e 0 caso contrário.
+
+Segundo Soares (2009), espera-se que no máximo **5%** dos alunos estejam abaixo do nível básico.
+
+## Bases de treino e teste
+
+Pensando na etapa de modelagem, a amostra Brasil foi dividida em **treino (90%, `r num(nrow(treino))` alunos)** e **teste (10%, 1.006 alunos)**, com sorteio estratificado pelas duas variáveis resposta. **Todas as análises deste relatório usam apenas a base de treino**; a base de teste fica reservada para a avaliação final do modelo.
+
+## Recorte Curitiba
+
+Como a amostra Brasil contém poucos alunos de Curitiba, foi construída uma base separada com **todos** os alunos da cidade (UF = Paraná e área = capital), aplicando os mesmos filtros: **`r num(nrow(curitiba))` alunos** em `r n_distinct(curitiba$ID_ESCOLA)` escolas, `r pct(mean(curitiba$IN_PUBLICA))` delas públicas. A base não permite distinguir escolas municipais de estaduais.
+
+## Ferramentas e organização do código
+
+Toda a análise foi feita em R (pacotes `tidyverse` e `scales`), com o código versionado no GitHub. Os scripts ficam na pasta `R/` e foram **numerados na ordem em que as etapas da análise acontecem**: como os arquivos são exibidos em ordem numérica e alfabética, a própria listagem da pasta mostra a sequência de execução, e cada script usa as bases geradas pelos anteriores. Rodando-os nessa ordem, todas as bases e resultados são reproduzidos a partir dos microdados do Inep.
+
+| Script | Etapa | Produz |
+|---|---|---|
+| `00_codebook.R` | Documentação das variáveis a partir do dicionário do Inep | `docs/codebook.csv`, `docs/codebook.md` |
+| `01 Preparação Base .R` | Amostra estratificada por UF, filtros de qualidade e variáveis resposta | `data/amostra_limpa.csv` |
+| `02 Separação bases.R` | Divisão em treino (90%) e teste (10%) | `data/treino.csv`, `data/teste.csv` |
+| `03 Teste viés.R` | Diagnóstico do efeito dos filtros na base completa | resultados no console |
+| `04 Descritiva Geral.R` | Análise descritiva da amostra Brasil | tabelas e gráficos |
+| `05 Base curitiba.R` | Base com todos os alunos de Curitiba, com os mesmos filtros | `data/curitiba_limpa.csv` |
+| `06 Comparação Curitiba.R` | Comparação Curitiba × Brasil | tabelas e gráficos |
+| `07 Fatores associados.R` | Força da associação das variáveis selecionadas com estar abaixo do básico | tabelas e gráficos |
+
+Este relatório fica na pasta `Entregas/` e reúne os resultados dessas etapas.
+
+# Resultados — Brasil
+
+## Proficiência em Língua Portuguesa e Matemática
+
+```{r resumo-notas}
+treino %>%
+  select(`Língua Portuguesa` = PROFICIENCIA_LP_SAEB, `Matemática` = PROFICIENCIA_MT_SAEB) %>%
+  pivot_longer(everything(), names_to = "Disciplina", values_to = "nota") %>%
+  group_by(Disciplina) %>%
+  summarise(
+    Média           = num(mean(nota), 1),
+    Mediana         = num(median(nota), 1),
+    `Desvio padrão` = num(sd(nota), 1),
+    Mínimo          = num(min(nota), 1),
+    `1º quartil`    = num(quantile(nota, 0.25), 1),
+    `3º quartil`    = num(quantile(nota, 0.75), 1),
+    Máximo          = num(max(nota), 1)
+  ) %>%
+  knitr::kable(align = "lrrrrrrr")
+```
+
+As notas das duas disciplinas têm distribuição aproximadamente simétrica (média e mediana praticamente iguais) e dispersão semelhante. A linha tracejada marca o corte do nível básico.
+
+```{r histogramas}
+treino %>%
+  select(`Língua Portuguesa` = PROFICIENCIA_LP_SAEB, `Matemática` = PROFICIENCIA_MT_SAEB) %>%
+  pivot_longer(everything(), names_to = "disciplina", values_to = "nota") %>%
+  ggplot(aes(nota, fill = disciplina)) +
+  geom_histogram(bins = 40, color = "white") +
+  geom_vline(data = cortes, aes(xintercept = corte), linetype = "dashed", linewidth = 0.8) +
+  facet_wrap(~ disciplina) +
+  scale_fill_manual(values = cores) +
+  scale_y_continuous(labels = num) +
+  labs(x = "Proficiência (escala Saeb)", y = "Nº de alunos") +
+  theme(legend.position = "none")
+```
+
+## Alunos abaixo do nível básico
+
+Na amostra Brasil, **`r pct(geral_lp)`** dos alunos estão abaixo do nível básico em Língua Portuguesa e **`r pct(geral_mt)`** em Matemática, ambos acima da expectativa de 5%.
+
+```{r combinado}
+treino %>%
+  mutate(Situação = case_when(
+    abaixo_LP == 0 & abaixo_MT == 0 ~ "Básico ou acima nas duas",
+    abaixo_LP == 1 & abaixo_MT == 0 ~ "Abaixo só em LP",
+    abaixo_LP == 0 & abaixo_MT == 1 ~ "Abaixo só em MT",
+    TRUE                            ~ "Abaixo nas duas"
+  )) %>%
+  count(Situação) %>%
+  mutate(`% dos alunos` = pct(n / sum(n)), Alunos = num(n)) %>%
+  select(Situação, Alunos, `% dos alunos`) %>%
+  knitr::kable(align = "lrr")
+```
+
+As notas de LP e MT são fortemente correlacionadas (r = `r num(cor(treino$PROFICIENCIA_LP_SAEB, treino$PROFICIENCIA_MT_SAEB), 2)`). As linhas tracejadas dividem o gráfico nos quatro grupos da tabela acima.
+
+```{r dispersao, fig.height = 5.5}
+ggplot(treino, aes(PROFICIENCIA_MT_SAEB, PROFICIENCIA_LP_SAEB)) +
+  geom_point(alpha = 0.15, size = 0.8, color = "grey30") +
+  geom_smooth(method = "loess", color = "#B03A2E", se = FALSE) +
+  geom_vline(xintercept = 175, linetype = "dashed", color = cor_mt, linewidth = 0.8) +
+  geom_hline(yintercept = 150, linetype = "dashed", color = cor_lp, linewidth = 0.8) +
+  labs(x = "Nota de Matemática", y = "Nota de Língua Portuguesa")
+```
+
+## Alunos abaixo do básico por característica
+
+Para cada variável são apresentados: a pergunta do questionário, a distribuição dos alunos e a proporção abaixo do nível básico em cada categoria, um gráfico de barras dessa proporção (a linha tracejada é a média geral) e o boxplot das notas (a linha tracejada é o corte do nível básico). As variáveis marcadas com **★** foram selecionadas pelo grupo como mais relevantes.
+
+```{r funcao-variavel}
+analisa_variavel <- function(var, titulo, rotulo_chunk = var) {
+  d <- com_rotulo(treino, var)
+  marca <- if (var %in% selecionadas) " ★" else ""
+
+  cat("\n\n#### ", titulo, marca, " {-}\n\n", sep = "")
+  cat("*", pergunta(var), "* (`", var, "`)\n\n", sep = "")
+
+  d %>%
+    group_by(Categoria = categoria) %>%
+    summarise(n = n(), LP = mean(abaixo_LP), MT = mean(abaixo_MT)) %>%
+    mutate(Alunos = num(n), `% dos alunos` = pct(n / sum(n)),
+           `Abaixo do básico LP` = pct(LP), `Abaixo do básico MT` = pct(MT)) %>%
+    select(-n, -LP, -MT) %>%
+    knitr::kable(align = "lrrrr") %>%
+    print()
+  cat("\n\n")
+
+  altura <- altura_por(n_distinct(d$categoria))
+
+  barras <- d %>%
+    group_by(categoria) %>%
+    summarise(`Língua Portuguesa` = mean(abaixo_LP), `Matemática` = mean(abaixo_MT)) %>%
+    pivot_longer(-categoria, names_to = "disciplina", values_to = "prop") %>%
+    ggplot(aes(fct_rev(categoria), prop, fill = disciplina)) +
+    geom_col(width = 0.7) +
+    geom_text(aes(label = pct(prop)), hjust = -0.15, size = 3.2) +
+    geom_hline(data = tibble(disciplina = names(cores), geral = c(geral_lp, geral_mt)),
+               aes(yintercept = geral), linetype = "dashed") +
+    coord_flip() +
+    facet_wrap(~ disciplina) +
+    scale_fill_manual(values = cores) +
+    scale_x_discrete(labels = \(x) str_wrap(x, 35)) +
+    scale_y_continuous(labels = eixo_pct, expand = expansion(mult = c(0, 0.25))) +
+    labs(x = NULL, y = "% abaixo do básico") +
+    theme(legend.position = "none")
+
+  caixas <- d %>%
+    select(categoria, `Língua Portuguesa` = PROFICIENCIA_LP_SAEB, `Matemática` = PROFICIENCIA_MT_SAEB) %>%
+    pivot_longer(-categoria, names_to = "disciplina", values_to = "nota") %>%
+    ggplot(aes(fct_rev(categoria), nota, fill = disciplina)) +
+    geom_boxplot(alpha = 0.35, outlier.size = 0.5, outlier.alpha = 0.3) +
+    geom_hline(data = cortes, aes(yintercept = corte), linetype = "dashed", color = "#B03A2E") +
+    coord_flip() +
+    facet_wrap(~ disciplina) +
+    scale_fill_manual(values = cores) +
+    scale_x_discrete(labels = \(x) str_wrap(x, 35)) +
+    labs(x = NULL, y = "Proficiência (escala Saeb)") +
+    theme(legend.position = "none")
+
+  imprime_grafico(barras, paste0("br-barras-", rotulo_chunk), altura)
+  imprime_grafico(caixas, paste0("br-caixas-", rotulo_chunk), altura)
+}
+```
+
+### Características do aluno {.tabset}
+
+```{r bloco-aluno, results = "asis"}
+analisa_variavel("TX_RESP_Q01", "Sexo")
+analisa_variavel("TX_RESP_Q04", "Cor/raça")
+analisa_variavel("TX_RESP_Q02", "Idade")
+analisa_variavel("TX_RESP_Q19", "Reprovação")
+analisa_variavel("TX_RESP_Q20", "Abandono escolar")
+analisa_variavel("TX_RESP_Q17", "Idade de entrada na escola")
+analisa_variavel("TX_RESP_Q05a", "Deficiência")
+analisa_variavel("TX_RESP_Q05b", "Transtorno do espectro autista")
+analisa_variavel("TX_RESP_Q05c", "Altas habilidades")
+```
+
+### Idade agrupada
+
+Agrupando as idades, fica mais claro o efeito da **distorção idade-série**: alunos com 12 anos ou mais, que em geral estão atrasados em relação à série, concentram uma proporção muito maior de alunos abaixo do básico.
+
+```{r idade-agrupada}
+treino %>%
+  mutate(Idade = case_when(
+    TX_RESP_Q02 == "A"                  ~ "9 anos ou menos",
+    TX_RESP_Q02 %in% c("B", "C")        ~ "10 e 11 anos",
+    TX_RESP_Q02 %in% c("D", "E", "F")   ~ "12 anos ou mais"
+  ) %>% factor(levels = c("9 anos ou menos", "10 e 11 anos", "12 anos ou mais"))) %>%
+  group_by(Idade) %>%
+  summarise(n = n(), LP = mean(abaixo_LP), MT = mean(abaixo_MT)) %>%
+  mutate(Alunos = num(n), `% dos alunos` = pct(n / sum(n)),
+         `Abaixo do básico LP` = pct(LP), `Abaixo do básico MT` = pct(MT)) %>%
+  select(-n, -LP, -MT) %>%
+  knitr::kable(align = "lrrrr")
+```
+
+### Ambiente familiar e entorno {.tabset}
+
+```{r bloco-ambiente, results = "asis"}
+analisa_variavel("TX_RESP_Q07a", "Mora com a mãe")
+analisa_variavel("TX_RESP_Q07b", "Mora com o pai")
+analisa_variavel("NU_TIPO_NIVEL_INSE", "Nível socioeconômico (INSE)")
+analisa_variavel("TX_RESP_Q18", "Tipo de escola desde o 1º ano")
+analisa_variavel("ID_LOCALIZACAO", "Localização da escola")
+analisa_variavel("TX_RESP_Q11a", "Rua asfaltada")
+analisa_variavel("TX_RESP_Q11b", "Água tratada")
+analisa_variavel("TX_RESP_Q11c", "Iluminação na rua")
+analisa_variavel("TX_RESP_Q12g", "Celulares com internet em casa")
+analisa_variavel("TX_RESP_Q13b", "Wi-Fi em casa")
+analisa_variavel("TX_RESP_Q16", "Meio de transporte para a escola")
+```
+
+### Responsáveis {.tabset}
+
+```{r bloco-responsaveis, results = "asis"}
+analisa_variavel("TX_RESP_Q08", "Escolaridade da mãe")
+analisa_variavel("TX_RESP_Q09", "Escolaridade do pai")
+analisa_variavel("TX_RESP_Q10a", "Leem em casa")
+analisa_variavel("TX_RESP_Q10c", "Incentivam a estudar")
+analisa_variavel("TX_RESP_Q10e", "Incentivam a ir à aula")
+analisa_variavel("TX_RESP_Q10f", "Vão às reuniões")
+```
+
+### Rotina {.tabset}
+
+```{r bloco-rotina, results = "asis"}
+analisa_variavel("TX_RESP_Q21a", "Tempo de estudo")
+analisa_variavel("TX_RESP_Q21b", "Cursos extracurriculares")
+analisa_variavel("TX_RESP_Q21c", "Trabalho em casa")
+analisa_variavel("TX_RESP_Q21d", "Trabalho fora de casa")
+analisa_variavel("TX_RESP_Q21e", "Lazer")
+```
+
+### Escola e professores {.tabset}
+
+```{r bloco-escola, results = "asis"}
+analisa_variavel("TX_RESP_Q22g", "Trabalhos em grupo")
+analisa_variavel("TX_RESP_Q23a", "Interesse pelo conteúdo")
+analisa_variavel("TX_RESP_Q23i", "Professores motivam")
+analisa_variavel("TX_RESP_Q23h", "Professores acreditam que é capaz")
+analisa_variavel("TX_RESP_Q23d", "Segurança na escola")
+```
+
+# Curitiba × Brasil
+
+```{r base-comparacao}
+vars_comp <- c("PROFICIENCIA_LP_SAEB", "PROFICIENCIA_MT_SAEB", "abaixo_LP", "abaixo_MT",
+               "NU_TIPO_NIVEL_INSE", str_subset(names(treino), "^TX_RESP_Q"))
+
+base <- bind_rows(
+  Brasil   = treino   %>% select(all_of(vars_comp)),
+  Curitiba = curitiba %>% select(all_of(vars_comp)),
+  .id = "grupo"
+)
+
+resumo_grupo <- base %>%
+  group_by(grupo) %>%
+  summarise(alunos = n(),
+            media_LP = mean(PROFICIENCIA_LP_SAEB), media_MT = mean(PROFICIENCIA_MT_SAEB),
+            abaixo_LP = mean(abaixo_LP), abaixo_MT = mean(abaixo_MT))
+cwb <- filter(resumo_grupo, grupo == "Curitiba")
+```
+
+## Visão geral
+
+Os alunos de Curitiba têm, em média, notas cerca de 10 pontos mais altas que os do Brasil nas duas disciplinas, e a proporção abaixo do nível básico é menor: **`r pct(cwb$abaixo_LP)`** em LP, dentro da expectativa de 5%, e **`r pct(cwb$abaixo_MT)`** em MT.
+
+```{r comp-tabela}
+base %>%
+  group_by(Grupo = grupo) %>%
+  summarise(
+    Alunos            = num(n()),
+    `Média LP`        = num(mean(PROFICIENCIA_LP_SAEB), 1),
+    `Média MT`        = num(mean(PROFICIENCIA_MT_SAEB), 1),
+    `Abaixo do básico LP` = pct(mean(abaixo_LP)),
+    `Abaixo do básico MT` = pct(mean(abaixo_MT))
+  ) %>%
+  knitr::kable(align = "lrrrrr")
+```
+
+```{r comp-abaixo}
+base %>%
+  group_by(grupo) %>%
+  summarise(`Língua Portuguesa` = mean(abaixo_LP), `Matemática` = mean(abaixo_MT)) %>%
+  pivot_longer(-grupo, names_to = "disciplina", values_to = "prop") %>%
+  ggplot(aes(disciplina, prop, fill = grupo)) +
+  geom_col(position = position_dodge(0.8), width = 0.7) +
+  geom_text(aes(label = pct(prop)), position = position_dodge(0.8), vjust = -0.4) +
+  geom_hline(yintercept = 0.05, linetype = "dashed") +
+  annotate("text", x = 0.5, y = 0.052, label = "Expectativa: até 5% (Soares, 2009)",
+           hjust = 0, vjust = 0, size = 3.5) +
+  scale_fill_manual(values = cores_grupo) +
+  scale_y_continuous(labels = eixo_pct, expand = expansion(mult = c(0, 0.15))) +
+  labs(x = NULL, y = "% abaixo do básico", fill = NULL)
+```
+
+## Trajetória escolar e escolaridade da família
+
+Os gráficos abaixo comparam a proporção de alunos abaixo do nível básico em Curitiba e no Brasil segundo o **número de reprovações** do aluno e a **escolaridade da mãe**. Categorias com menos de 30 alunos aparecem como "n < 30".
+
+```{r funcao-comparacao}
+compara_abaixo <- function(var, minimo = 30) {
+  com_rotulo(base, var) %>%
+    group_by(grupo, categoria) %>%
+    summarise(alunos = n(), `Língua Portuguesa` = mean(abaixo_LP), `Matemática` = mean(abaixo_MT),
+              .groups = "drop") %>%
+    pivot_longer(c(`Língua Portuguesa`, `Matemática`), names_to = "disciplina", values_to = "prop") %>%
+    mutate(prop   = if_else(alunos < minimo, NA_real_, prop),
+           rotulo = if_else(is.na(prop), paste("n <", minimo), pct(prop)),
+           y_txt  = coalesce(prop, 0)) %>%
+    ggplot(aes(fct_rev(categoria), prop, fill = grupo)) +
+    geom_col(position = position_dodge(0.8), width = 0.7, na.rm = TRUE) +
+    geom_text(aes(y = y_txt, label = rotulo), position = position_dodge(0.8), hjust = -0.1, size = 3) +
+    coord_flip() +
+    facet_wrap(~ disciplina) +
+    scale_fill_manual(values = cores_grupo) +
+    scale_x_discrete(labels = \(x) str_wrap(x, 30)) +
+    scale_y_continuous(labels = eixo_pct, expand = expansion(mult = c(0, 0.3))) +
+    guides(fill = guide_legend(reverse = TRUE)) +
+    labs(x = NULL, y = "% abaixo do básico", fill = NULL)
+}
+```
+
+### Reprovação
+
+```{r comp-reprovacao, fig.height = 4}
+compara_abaixo("TX_RESP_Q19")
+```
+
+### Escolaridade da mãe
+
+```{r comp-escolaridade-mae, fig.height = 5.5}
+compara_abaixo("TX_RESP_Q08")
+```
+
+## Principais diferenças
+
+> **Rascunho para revisão do grupo.**
+
+- **Reprovação:** é fortemente associada a estar abaixo do básico nos dois grupos, mas em Curitiba a proporção entre os reprovados é bem menor que no Brasil (cerca de metade entre os reprovados uma vez).
+- **Escolaridade da mãe:** em Curitiba, filhos de mães com baixa escolaridade apresentam proporções abaixo do básico semelhantes ou maiores que no Brasil, apesar do desempenho médio superior, o que pode indicar desigualdade interna. Esses grupos são pequenos e o resultado deve ser visto com cautela.
+- **Composição socioeconômica:** os alunos de Curitiba concentram-se nos níveis mais altos do INSE, e parte da vantagem da cidade parece acompanhar esse perfil (ver `R/06 Comparação Curitiba.R`).
+
+# Fatores associados a estar abaixo do nível básico
+
+Para comparar a força da associação de cada variável selecionada pelo grupo com estar abaixo do nível básico, foi usado o **V de Cramér**, calculado a partir do teste qui-quadrado de independência. Ele varia de 0 (nenhuma associação) a 1 (associação perfeita); como referência usual, valores próximos de 0,1 indicam associação fraca e próximos de 0,3, moderada.
+
+```{r fatores}
+nomes_sel <- tribble(
+  ~variavel,            ~bloco,                   ~nome,
+  "TX_RESP_Q02",        "Trajetória escolar",     "Idade",
+  "TX_RESP_Q19",        "Trajetória escolar",     "Reprovação",
+  "TX_RESP_Q17",        "Trajetória escolar",     "Idade de entrada na escola",
+  "TX_RESP_Q07a",       "Estrutura familiar",     "Mora com a mãe",
+  "TX_RESP_Q07b",       "Estrutura familiar",     "Mora com o pai",
+  "NU_TIPO_NIVEL_INSE", "Nível socioeconômico",   "INSE",
+  "TX_RESP_Q08",        "Nível socioeconômico",   "Escolaridade da mãe",
+  "TX_RESP_Q09",        "Nível socioeconômico",   "Escolaridade do pai",
+  "TX_RESP_Q12g",       "Nível socioeconômico",   "Celulares em casa",
+  "TX_RESP_Q11a",       "Entorno",                "Rua asfaltada",
+  "TX_RESP_Q11c",       "Entorno",                "Iluminação na rua",
+  "TX_RESP_Q10c",       "Envolvimento dos pais",  "Incentivam a estudar",
+  "TX_RESP_Q10e",       "Envolvimento dos pais",  "Incentivam a ir à aula",
+  "TX_RESP_Q10f",       "Envolvimento dos pais",  "Vão às reuniões",
+  "TX_RESP_Q21d",       "Rotina",                 "Trabalho fora de casa",
+  "TX_RESP_Q21e",       "Rotina",                 "Tempo de lazer",
+  "TX_RESP_Q22g",       "Escola",                 "Trabalhos em grupo",
+  "TX_RESP_Q23a",       "Escola",                 "Interesse pelo conteúdo",
+  "TX_RESP_Q23i",       "Escola",                 "Professores motivam",
+  "TX_RESP_Q23h",       "Escola",                 "Professores acreditam que é capaz"
+)
+
+associacao <- function(x, y) {
+  tab   <- table(x, y)
+  teste <- suppressWarnings(chisq.test(tab, correct = FALSE))
+  tibble(p = teste$p.value,
+         v = sqrt(unname(teste$statistic) / (sum(tab) * (min(dim(tab)) - 1))))
+}
+
+fatores <- nomes_sel %>%
+  mutate(LP = map(variavel, \(v) associacao(treino[[v]], treino$abaixo_LP)),
+         MT = map(variavel, \(v) associacao(treino[[v]], treino$abaixo_MT))) %>%
+  unnest(c(LP, MT), names_sep = "_") %>%
+  arrange(desc(LP_v + MT_v))
+```
+
+```{r fatores-grafico, fig.height = 7}
+fatores %>%
+  select(nome, `Língua Portuguesa` = LP_v, `Matemática` = MT_v) %>%
+  pivot_longer(-nome, names_to = "disciplina", values_to = "v") %>%
+  ggplot(aes(v, fct_reorder(nome, v, .fun = sum), color = disciplina)) +
+  geom_line(aes(group = nome), color = "grey75", linewidth = 1) +
+  geom_point(size = 3) +
+  geom_vline(xintercept = 0.1, linetype = "dashed", color = "grey50") +
+  scale_color_manual(values = cores) +
+  scale_x_continuous(labels = \(x) num(x, 2)) +
+  labs(x = "V de Cramér", y = NULL, color = NULL)
+```
+
+```{r fatores-tabela}
+fatores %>%
+  transmute(Bloco = bloco, Variável = nome,
+            `V (LP)` = num(LP_v, 3),
+            `p-valor (LP)` = if_else(LP_p < 0.001, "< 0,001", num(LP_p, 3)),
+            `V (MT)` = num(MT_v, 3),
+            `p-valor (MT)` = if_else(MT_p < 0.001, "< 0,001", num(MT_p, 3))) %>%
+  knitr::kable(align = "llrrrr")
+```
+
+**Força média da associação por bloco:**
+
+```{r fatores-blocos}
+fatores %>%
+  group_by(Bloco = bloco) %>%
+  summarise(Variáveis = n(), `V médio (LP)` = mean(LP_v), `V médio (MT)` = mean(MT_v)) %>%
+  arrange(desc(`V médio (LP)` + `V médio (MT)`)) %>%
+  mutate(across(starts_with("V médio"), \(x) num(x, 3))) %>%
+  knitr::kable(align = "lrrr")
+```
+
+> **Rascunho para revisão do grupo.** Todas as variáveis selecionadas apresentam associação estatisticamente significativa com estar abaixo do nível básico, mas de intensidade fraca (V entre 0,03 e 0,19), o que é esperado quando o evento estudado é pouco frequente. As associações mais fortes estão na **trajetória escolar** (reprovação e idade) e no **nível socioeconômico** (INSE, bens e escolaridade da mãe), seguidas do **tempo de lazer**. O envolvimento dos pais aparece com as associações mais fracas. Como essas medidas olham cada variável isoladamente, parte delas pode refletir o efeito de outras (por exemplo, do nível socioeconômico); a separação desses efeitos será feita na etapa de modelagem.
+
+# Síntese preliminar
+
+> **Rascunho para revisão do grupo.**
+
+1. Na amostra Brasil, `r pct(geral_lp)` dos alunos do 5º ano estão abaixo do nível básico em Língua Portuguesa e `r pct(geral_mt)` em Matemática, acima da expectativa de 5% — e esses valores provavelmente subestimam a realidade, devido ao filtro de questionário completo.
+2. Curitiba apresenta desempenho superior ao do Brasil, mas grande parte dessa diferença acompanha o perfil socioeconômico mais alto de seus alunos.
+3. Os fatores mais associados a estar abaixo do básico são a reprovação, a distorção idade-série e o nível socioeconômico.
+
+# Próximos passos
+
+- Selecionar as análises e visualizações mais relevantes para a versão final.
+- Verificar se os principais fatores continuam associados ao desempenho **entre alunos de mesmo nível socioeconômico**.
+- Ajustar modelos de regressão logística para `abaixo_LP` e `abaixo_MT`, avaliando-os na base de teste.
+
+# Referências
+
+> **Completar com as referências completas usadas pelo grupo.**
+
+- INEP. *Microdados do Saeb 2023*. Brasília: Inep. Disponível em: https://download.inep.gov.br/microdados/microdados_saeb_2023.zip.
+- SOARES, J. F. (2009) — fonte do Quadro 1 de níveis de aprendizado; completar a referência.

@@ -180,7 +180,7 @@ resumo_variavel(treino, TX_RESP_Q02)
 treino %>%
   mutate(TX_RESP_Q02 = case_when(
     TX_RESP_Q02 %in% c("A") ~ "9 ou menos",
-    TX_RESP_Q02 %in% c("B", "C") ~ "10 e 11",  # ajuste conforme o que cada letra representa de fato
+    TX_RESP_Q02 %in% c("B", "C") ~ "10 e 11",
     TX_RESP_Q02 %in% c("D", "E", "F") ~ "12 ou mais",
     TRUE ~ NA_character_
   )) %>%
@@ -257,7 +257,7 @@ resumo_variavel(treino, TX_RESP_Q11c)
 resumo_variavel(treino, TX_RESP_Q12g)
 
 #POSSUI WI-FI
-resumo_variavel(treino, TX_RESP_Q13a)
+resumo_variavel(treino, TX_RESP_Q13b)
 
 #MEIO DE TRANSPORTE PARA IR PARA A ESCOLA
 resumo_variavel(treino, TX_RESP_Q16)
@@ -275,8 +275,8 @@ treino %>%
   group_by(TX_RESP_Q08) %>%
   summarise(proporção = mean(abaixo_LP, na.rm = T)) %>%
   ggplot(aes(x=TX_RESP_Q08 ,y=proporção)) + 
-  geom_col() 
-View(treino)
+  geom_col()
+
 #Boxplot:
 treino %>% 
   ggplot() +
@@ -357,10 +357,10 @@ resumo_variavel(treino, TX_RESP_Q21b)
 #Tempo usado para trabalhar em casa
 resumo_variavel(treino, TX_RESP_Q21c)
 
-#Tempo usado para trabalhar fora de casa
+#Tempo usado para trabalhar fora de casa *
 resumo_variavel(treino, TX_RESP_Q21d)
 
-#tempo destinado para lazer
+#tempo destinado para lazer *
 resumo_variavel(treino, TX_RESP_Q21e)
 
 #----------------------------------------
@@ -375,6 +375,9 @@ resumo_variavel(treino, TX_RESP_Q23a)
 
 #Professores motivam os alunos a continuar os estudos *
 resumo_variavel(treino, TX_RESP_Q23i)
+
+#Professores acreditam que o aluno é capaz de aprender *
+resumo_variavel(treino, TX_RESP_Q23h)
 
 #Se sente seguro na escola
 resumo_variavel(treino, TX_RESP_Q23d)
