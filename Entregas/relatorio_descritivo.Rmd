@@ -101,8 +101,6 @@ Este relatório parcial apresenta a etapa descritiva. As associações identific
 
 # Dados e metodologia
 
-> Rascunho para revisão do grupo.
-
 ## Fonte dos dados
 
 Foram utilizados os microdados do Saeb 2023 disponibilizados pelo Inep, arquivo `TS_ALUNO_5EF`, com uma linha por aluno do 5º ano: 2.442.143 alunos e 152 variáveis, entre identificação, controle da aplicação, proficiências e as respostas ao questionário do aluno. A descrição de todas as variáveis está no codebook do projeto (`docs/codebook.md`), gerado a partir do dicionário oficial do Inep.
@@ -257,6 +255,8 @@ treino %>%
 ```
 
 As notas de LP e MT são fortemente correlacionadas (r = `r num(cor(treino$PROFICIENCIA_LP_SAEB, treino$PROFICIENCIA_MT_SAEB), 2)`). As linhas tracejadas dividem o gráfico nos quatro grupos da tabela acima.
+
+A curva vermelha é uma suavização loess (regressão local), técnica que vimos na disciplina de Estatística Básica e que optamos por utilizar aqui por mostrar a tendência entre as duas notas sem impor que a relação seja uma reta. A curva é crescente e praticamente linear na faixa central das notas, achatando-se apenas nas notas mais altas de Matemática.
 
 ```{r dispersao, fig.height = 5.5}
 ggplot(treino, aes(PROFICIENCIA_MT_SAEB, PROFICIENCIA_LP_SAEB)) +
@@ -500,8 +500,6 @@ compara_abaixo("TX_RESP_Q08")
 
 ## Principais diferenças
 
-> Rascunho para revisão do grupo.
-
 - Reprovação: é fortemente associada a estar abaixo do básico nos dois grupos, mas em Curitiba a proporção entre os reprovados é bem menor que no Brasil (cerca de metade entre os reprovados uma vez).
 - Escolaridade da mãe: em Curitiba, filhos de mães com baixa escolaridade apresentam proporções abaixo do básico semelhantes ou maiores que no Brasil, apesar do desempenho médio superior, o que pode indicar desigualdade interna. Esses grupos são pequenos e o resultado deve ser visto com cautela.
 - Composição socioeconômica: os alunos de Curitiba concentram-se nos níveis mais altos do INSE, e parte da vantagem da cidade parece acompanhar esse perfil (ver `R/06 Comparação Curitiba.R`).
@@ -583,4 +581,4 @@ fatores %>%
   knitr::kable(align = "lrrr")
 ```
 
-> Rascunho para revisão do grupo. Todas as variáveis selecionadas apresentam associação estatisticamente significativa com estar abaixo do nível básico, mas de intensidade fraca (V entre 0,03 e 0,19), o que é esperado quando o evento estudado é pouco frequente. As associações mais fortes estão na trajetória escolar (reprovação e idade) e no nível socioeconômico (INSE, bens e escolaridade da mãe), seguidas do tempo de lazer. O envolvimento dos pais aparece com as associações mais fracas. Como essas medidas olham cada variável isoladamente, parte delas pode refletir o efeito de outras (por exemplo, do nível socioeconômico); a separação desses efeitos será feita na etapa de modelagem.
+Todas as variáveis selecionadas apresentam associação estatisticamente significativa com estar abaixo do nível básico, mas de intensidade fraca (V entre 0,03 e 0,19), o que é esperado quando o evento estudado é pouco frequente. As associações mais fortes estão na trajetória escolar (reprovação e idade) e no nível socioeconômico (INSE, bens e escolaridade da mãe), seguidas do tempo de lazer. O envolvimento dos pais aparece com as associações mais fracas. Como essas medidas olham cada variável isoladamente, parte delas pode refletir o efeito de outras (por exemplo, do nível socioeconômico); a separação desses efeitos será feita na etapa de modelagem.
