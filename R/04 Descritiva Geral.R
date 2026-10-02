@@ -397,7 +397,10 @@ install.packages("hrbrthemes")
 library(hrbrthemes)
 library(viridis)
 
-#Relacão de reprovações com idade 
+#--------------------------------
+#Relacão de reprovações com idade
+#--------------------------------
+
 treino %>%
   mutate(Idade = case_when(
     TX_RESP_Q02 %in% c("A") ~ "9 ou menos",
@@ -501,7 +504,7 @@ treino %>%
 #Tentar explicar porque nas faixas de idade elevadas a proporção de alunos abaixo do básico é maior
 #A mesma coisa ocorre com as horas de trabalho fora de casa
 #Talvez quem trabalha mais estuda menos
-#Vamos explorar essa relação com o próximo gráfico
+#Vamos explorar essa relação com o
 
 #-------------------------------------------------
 #Relação entre tempo de estudo e tempo trabalhando
@@ -546,8 +549,7 @@ treino %>%
 
 #Esperava-se que conforme mais horas trabalhadas, o estudante estudaria menos, mas não se observa isso
 # A proporção de alunos abaixo do básico é maior conforme as horas trabalhadas aumentam
-# Talvez o aluno que trabalhe mais tenha mais dificuldade e estude mais  
-
+# Talvez o aluno que trabalhe mais tenha mais dificuldade e estude mais, 
 
 #------------------------------------------------------
 #Quem não tem a mãe/pai em casa tem que trabalhar?
@@ -574,7 +576,7 @@ treino %>%
     levels = c("Nenhuma", "Menos de 1 hora", "Entre 1 e 2 horas", "2 ou mais horas")
   )
   ) %>%
- # filter(Horas_trabalho != "Nenhuma") %>% (Fltra a barra "nenhuma" pois ela ofusca as outras)
+ # filter(Horas_trabalho != "Nenhuma") %>% #(Fltra a barra "nenhuma" pois ela ofusca as outras)
   group_by(estrutura_familiar, Horas_trabalho) %>%
   summarise(n = n(), .groups = "drop") %>%
   group_by(estrutura_familiar) %>%
@@ -638,9 +640,9 @@ treino %>%
 #Observa-se um aumento na quantidade de horas de estudo por dia conforme o incentivo é mais presente
 #pode indicar forte relação entre essas variáveis
 
-#-----------------------------------------------
+#------------------------------
 #Tempo de estudo por reprovação
-#-----------------------------------------------
+#------------------------------
 treino %>%
   mutate(reprovação = case_when(
     TX_RESP_Q19 %in% c("A") ~ "Nenhuma",
@@ -688,6 +690,116 @@ treino %>%
 #dos alunos reprovados realmente estude menos, mas uma fração desse grupo pode ter mais dificuldade e precise estudar mais
 #A hipótese inicial não precisa ser descartada
 
+#-------------------
+#INSE com reprovação
+#-------------------
+
+treino %>%
+  mutate(reprovação = case_when(
+    TX_RESP_Q19 %in% c("A") ~ "Nenhuma",
+    TX_RESP_Q19 %in% c("B") ~ "Uma",
+    TX_RESP_Q19 %in% c("C") ~ "Duas ou mais"
+  ), 
+  reprovação = factor(
+    reprovação,
+    levels = c("Nenhuma", "Uma", "Duas ou mais")
+  )
+  ) %>%
+  group_by(NU_TIPO_NIVEL_INSE, reprovação) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  group_by(NU_TIPO_NIVEL_INSE) %>%
+  mutate(
+    total = sum(n),
+    proporção = n / total
+  ) %>%
+  ungroup() %>%
+  ggplot(aes(fill = reprovação, y = proporção, x = NU_TIPO_NIVEL_INSE)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  labs(title = "Relação entre INSE e n° de reprovações",
+       y = "Proporção") +
+  scale_fill_viridis_d(option = "E") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_minimal()
+  
+#O número de reporvações é mais alto nos niveis socioeconomicos mais baixos. As duas variáveis estão relacionadas com a proficiência
+# e também possuem algum tipo de relação
+
+#---------------------------
+#INSE com abandono da escola
+#---------------------------
+
+treino %>%
+  mutate(abandono = case_when(
+    TX_RESP_Q20 %in% c("A") ~ "Nunca abandonou",
+    TX_RESP_Q20 %in% c("B") ~ "Uma vez",
+    TX_RESP_Q20 %in% c("C") ~ "Duas ou mais vezes",
+    ),
+    abandono = factor(
+      abandono,
+      levels = c("Nunca abandonou", "Uma vez", "Duas ou mais vezes")
+    )
+  ) %>%
+ # filter(abandono != "Nunca abandonou") %>% #(Fltra a barra "nenhuma" pois ela ofusca as outras)
+  group_by(NU_TIPO_NIVEL_INSE, abandono) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  group_by(NU_TIPO_NIVEL_INSE) %>%
+  mutate(
+    total = sum(n),
+    proporção = n / total
+  ) %>%
+  ungroup() %>%
+  ggplot(aes(fill = abandono, y = proporção, x = NU_TIPO_NIVEL_INSE)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  labs(title = "Relação entre INSE e abandono da escola",
+       y = "Proporção") +
+  scale_fill_viridis_d(option = "E") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_minimal()
+
+#A proporção de pessoas que abandonam a escola vai diminuindo conforme o Inse aumente, menos no nível 8, contraintuitivamente.
+
+#------------------
+#Idade com abandono
+#------------------
+
+treino %>%
+  mutate(Idade = case_when(
+    TX_RESP_Q02 %in% c("A") ~ "9 ou menos",
+    TX_RESP_Q02 %in% c("B", "C") ~ "10 e 11", 
+    TX_RESP_Q02 %in% c("D", "E", "F") ~ "12 ou mais",
+    TRUE ~ NA_character_
+  ),
+  Idade = factor(
+    Idade,
+    levels = c("9 ou menos", "10 e 11", "12 ou mais")
+  ),
+  abandono = case_when(
+    TX_RESP_Q20 %in% c("A") ~ "Nunca abandonou",
+    TX_RESP_Q20 %in% c("B") ~ "Uma vez",
+    TX_RESP_Q20 %in% c("C") ~ "Duas ou mais vezes",
+  ),
+  abandono = factor(
+    abandono,
+    levels = c("Nunca abandonou", "Uma vez", "Duas ou mais vezes")
+  )
+  ) %>%
+  group_by(Idade, abandono) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  group_by(Idade) %>%
+  mutate(
+    total = sum(n),
+    proporção = n/total
+  ) %>%
+  ungroup() %>%
+  ggplot(aes(fill = abandono, y = proporção, x = Idade)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  labs(title = "Proporção de abandono da escola por faixa de idade",
+       y = "Proporção") +
+  scale_fill_viridis_d(option = "E") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_minimal()
+  
+
 #______________________________________________________________________________
 #Densidade do INSE individual colorido pelas horas/dia de trabalho fora de casa
 #------------------------------------------------------------------------------
@@ -718,9 +830,46 @@ treino %>%
 #Conforme as horas de trabalho diárias fora de casa aumenta, o que tambem ocorre com o INSE
 #Pode indicar que os alunos nos níveis mais baixos precisam trabalhar e não conseguem se dedicar nos estudos
 
-#O gráfico não indica uma relação forte entre essas variáveis, a hipótese inicial pode ser descartada
+#O gráfico não indica uma relação forte entre essas variáveis, talvez a hipótese inicial possa ser descartada
+
+#----------------------------------------------
+#Inse com as horas/dia de trabalho fora de casa
+#----------------------------------------------
+
+
+
+#-----------------------------------------------------
+#Escolaridade dos responsáveis com incentivo a estudos
+#-----------------------------------------------------
+
+treino %>%
+  mutate(escolaridade_responsaveis = case_when(
+    TX_RESP_Q08 %in% c("A") | TX_RESP_Q09 %in% c("A") ~ "Não completou o 5° ano EF",
+    TX_RESP_Q08 %in% c("B") ~ "EF até o 5° ano",
+    TX_RESP_Q08 %in% c("C") ~ "Ensino Fundamental completo",
+    TX_RESP_Q08 %in% c("D") ~ "Ensino Médio completo",
+    TX_RESP_Q08 %in% c("E") ~ "Ensino Superior completo",
+    TX_RESP_Q08 %in% c("F") ~ "Não sabe"
+  ),
+  escolaridade_responsaveis = factor(
+    escolaridade_responsaveis,
+    levels = c("Não completou o 5° ano EF", "EF até o 5° ano","Ensino Fundamental completo","Ensino Médio completo","Ensino Superior completo","Não sabe")
+  ),
+  Incentivo = case_when(
+    TX_RESP_Q10c %in% c("A") ~ "Nunca ou quase nunca",
+    TX_RESP_Q10c %in% c("B") ~ "De vez em quando",
+    TX_RESP_Q10c %in% c("C") ~ "Sempre ou quase sempre",
+  ),
+  Incentivo = factor(
+    Incentivo,
+    levels = c("Nunca ou quase nunca", "De vez em quando", "Sempre ou quase sempre")
+  )) %>%
+  group_by(escolaridade_responsaveis, Incentivo)
+
 
 #OUTRAS ANÁlISES
 
-
+#-------------------------------------------------------------------------------
+#Mapa com os estados coloridos de acordo com o número de alunos abaixo do básico
+#-------------------------------------------------------------------------------
 
