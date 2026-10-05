@@ -1,0 +1,354 @@
+---
+title: "Adendo ao relatório descritivo: interpretação dos resultados"
+subtitle: "Eixo 4 — Educação Básica Municipal (parceria SME Curitiba) · Projetos de Análise de Dados 2026/2"
+date: "`r format(Sys.Date(), '%d/%m/%Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    number_sections: true
+    theme: flatly
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+```
+
+```{r preparacao}
+library(tidyverse)
+library(scales)
+
+treino   <- read.csv("data/treino.csv")
+codebook <- read.csv("docs/codebook.csv", encoding = "UTF-8")
+
+rotulos <- function(var) {
+  cats   <- codebook$categorias[codebook$variavel == var]
+  partes <- str_split(cats, ";\\s*")[[1]]
+  m      <- str_match(partes, "^\\s*(\\S+)\\s*[=-]\\s*(.*)$")
+  setNames(str_remove(str_trim(m[, 3]), "\\.$"), m[, 2])
+}
+
+ic_wilson <- function(x, n, z = 1.96) {
+  p      <- x / n
+  centro <- (p + z^2 / (2 * n)) / (1 + z^2 / n)
+  margem <- z * sqrt(p * (1 - p) / n + z^2 / (4 * n^2)) / (1 + z^2 / n)
+  sprintf("%s (%s a %s)",
+          number(100 * p, 0.1, decimal.mark = ","),
+          number(100 * (centro - margem), 0.1, decimal.mark = ","),
+          number(100 * (centro + margem), 0.1, decimal.mark = ","))
+}
+
+tabela <- function(var, dados = treino) {
+  lab <- rotulos(var)
+  dados %>%
+    group_by(cod = as.character(.data[[var]])) %>%
+    summarise(n = n(), xl = sum(abaixo_LP), xm = sum(abaixo_MT)) %>%
+    mutate(cod = factor(cod, levels = intersect(names(lab), cod))) %>%
+    arrange(cod) %>%
+    transmute(
+      Categoria = coalesce(lab[as.character(cod)], as.character(cod)),
+      Alunos = number(n, big.mark = "."),
+      `% dos alunos` = number(100 * n / sum(n), 0.1, decimal.mark = ","),
+      `% abaixo do básico LP (IC 95%)` = ic_wilson(xl, n),
+      `% abaixo do básico MT (IC 95%)` = ic_wilson(xm, n)
+    ) %>%
+    knitr::kable(align = "lrrrr")
+}
+```
+
+# Objetivo deste adendo
+
+O relatório descritivo apresentou os resultados da base em forma de tabelas e gráficos, mas sem interpretá-los. Este adendo retoma cada resultado do relatório, na mesma ordem, e responde a três perguntas:
+
+1. O que o resultado mostra?
+2. O resultado é confiável? (há alunos suficientes em cada categoria?)
+3. O resultado é relevante para a hipótese do trabalho — a de que características do aluno, da família, da rotina e da escola estão associadas a estar abaixo do nível básico? Deve permanecer no relatório final?
+
+Para tornar visível a confiabilidade de cada proporção, as tabelas trazem o número de alunos de cada categoria e o intervalo de confiança de 95% (método de Wilson) da proporção de alunos abaixo do básico. Quanto menor o grupo, mais largo o intervalo. Quando os intervalos de duas categorias não se sobrepõem, a diferença entre elas dificilmente é obra do acaso.
+
+As referências de "média geral" ao longo do texto são 7,7% de alunos abaixo do básico em Língua Portuguesa (LP) e 11,0% em Matemática (MT), na base de treino (9.062 alunos).
+
+# Notas de proficiência e alunos abaixo do básico
+
+As distribuições das notas são aproximadamente simétricas, com médias de 223 pontos em LP e 236 em MT. O corte do nível básico em MT (175) fica mais próximo do centro da distribuição do que o de LP (150), o que explica por que a proporção abaixo do básico é maior em Matemática.
+
+O indicador combinado mostra que 85,5% dos alunos atingem o nível básico nas duas disciplinas e 4,2% estão abaixo nas duas. Entre os que estão abaixo em apenas uma, predomina Matemática (6,9%, contra 3,5% só em LP). Matemática é, portanto, o principal ponto de atenção.
+
+As notas das duas disciplinas são fortemente correlacionadas (r = 0,69): os alunos com dificuldade tendem a tê-la nas duas áreas. Isso sugere que os fatores associados ao baixo desempenho são, em boa parte, os mesmos para LP e MT — o que se confirma nas seções seguintes, em que os padrões das duas disciplinas quase sempre andam juntos.
+
+Recomendação: manter. É o ponto de partida do relatório e dimensiona o problema.
+
+# Características do aluno
+
+## Idade
+
+```{r}
+tabela("TX_RESP_Q02")
+```
+
+É uma das variáveis mais associadas ao baixo desempenho. Os alunos de 10 e 11 anos — idade esperada para o 5º ano — têm cerca de 6,5% abaixo do básico em LP. A partir dos 12 anos, a proporção triplica (cerca de 20%) e chega a 31% entre os de 14 anos ou mais. Esse padrão reflete a distorção idade-série: alunos mais velhos que o esperado para a série, em geral, já reprovaram ou interromperam os estudos, como mostram as próximas variáveis. O grupo de "9 anos ou menos" tem apenas 46 alunos e intervalo de confiança muito largo (6% a 26%), não permitindo conclusão.
+
+Recomendação: manter, interpretando junto com reprovação e abandono, sob a ideia de trajetória escolar.
+
+## Reprovação
+
+```{r}
+tabela("TX_RESP_Q19")
+```
+
+É a variável mais fortemente associada ao baixo desempenho (V de Cramér de 0,156 em LP e 0,173 em MT). Entre os alunos que já reprovaram uma vez, 20,9% estão abaixo do básico em LP — mais de três vezes a proporção dos que nunca reprovaram (6,3%). Em MT, a proporção cresce com o número de reprovações (9,2%, 25,1% e 33,0%). Em LP, os que reprovaram duas vezes ou mais aparecem com proporção menor que os que reprovaram uma vez, mas os intervalos de confiança se sobrepõem, então essa diferença não é confiável.
+
+É importante notar que a reprovação não melhora o desempenho: os alunos que já repetiram de ano continuam muito mais concentrados abaixo do nível básico. Para a SME, a reprovação funciona como um sinal de alerta para identificar alunos que precisam de acompanhamento.
+
+Recomendação: manter. É um dos resultados centrais.
+
+## Abandono escolar e idade de entrada na escola
+
+```{r}
+tabela("TX_RESP_Q20")
+tabela("TX_RESP_Q17")
+```
+
+O abandono segue o mesmo padrão da reprovação: a proporção abaixo do básico dobra entre quem abandonou uma vez (14,8% em LP) e triplica entre quem abandonou duas vezes ou mais (20,6%), embora este último grupo seja pequeno (126 alunos).
+
+Na idade de entrada na escola, não há diferença entre os que entraram com até 7 anos (cerca de 7% em LP). Apenas os que entraram com 8 anos ou mais se destacam (16,6%). Ou seja, o que importa não é entrar mais cedo, e sim não entrar muito tarde — situação que também gera distorção idade-série.
+
+Recomendação: manter de forma resumida, como parte da trajetória escolar, junto com idade e reprovação.
+
+## Sexo
+
+```{r}
+tabela("TX_RESP_Q01")
+```
+
+Há uma inversão entre as disciplinas: as meninas têm menos alunas abaixo do básico em LP (6,0% contra 8,8% dos meninos, com intervalos que não se sobrepõem), enquanto em MT a situação se inverte levemente (11,4% contra 9,8%). Esse padrão é frequentemente observado em avaliações educacionais. Os alunos que preferiram não declarar o sexo (185) têm proporções bem mais altas (21,1% em LP), mas o grupo é pequeno e heterogêneo, e não é possível atribuir significado a essa categoria.
+
+Recomendação: manter apenas como observação breve sobre a diferença entre disciplinas; não é um fator central para a hipótese.
+
+## Cor/raça
+
+```{r}
+tabela("TX_RESP_Q04")
+```
+
+Os alunos que se declaram pretos têm proporção de alunos abaixo do básico (13,0% em LP) mais que o dobro da dos brancos (5,7%), com intervalos que não se sobrepõem. Os pardos ficam em posição intermediária (7,3%). As categorias amarela e indígena têm poucos alunos e intervalos largos, sem conclusão possível.
+
+A associação existe, mas é fraca (V de 0,08 em LP) e provavelmente está ligada às desigualdades socioeconômicas entre os grupos. Sem verificar se a diferença permanece entre alunos de mesmo nível socioeconômico, ela não acrescenta muito à hipótese.
+
+Recomendação: retirar do relatório final, conforme orientação do professor, ou retomar apenas se a análise controlando pelo INSE mostrar diferença.
+
+## Deficiência, transtorno do espectro autista e altas habilidades
+
+```{r}
+tabela("TX_RESP_Q05a")
+tabela("TX_RESP_Q05b")
+tabela("TX_RESP_Q05c")
+```
+
+Os alunos com deficiência e com transtorno do espectro autista têm cerca do dobro da proporção abaixo do básico em LP (17,7% e 16,0%) e mais que o dobro em MT (26,1% e 27,2%). São grupos pequenos (cerca de 200 alunos cada), mas os intervalos não se sobrepõem aos dos demais alunos, então a diferença é consistente.
+
+O item de altas habilidades apresenta um resultado contraditório: os alunos que se declararam com altas habilidades têm proporção abaixo do básico maior que os demais em LP (10,5% contra 7,4%). Além disso, 8% dos alunos marcaram essa opção, proporção alta para essa condição. Isso sugere que muitos alunos não compreenderam a pergunta, e o item não é confiável.
+
+Recomendação: incluir deficiência e TEA no relatório final, pois são relevantes para as políticas de educação inclusiva da SME (essas variáveis não haviam sido marcadas pelo grupo). Retirar altas habilidades.
+
+# Ambiente familiar e entorno
+
+## Nível socioeconômico (INSE)
+
+```{r}
+tabela("NU_TIPO_NIVEL_INSE")
+```
+
+É o fator com o gradiente mais nítido de toda a análise: a proporção de alunos abaixo do básico em LP cai continuamente de 25,2% no nível I para 3,0% no nível VII, e em MT de 36,9% para 4,3%. A cada nível do INSE, a proporção diminui. O nível VIII não difere do VII (os intervalos se sobrepõem, e o grupo tem só 144 alunos).
+
+Recomendação: manter. É o resultado mais forte e consistente, e deve ser a referência para analisar as demais variáveis, já que muitas delas (bens, escolaridade dos pais, infraestrutura) são reflexos do nível socioeconômico.
+
+## Escolaridade da mãe e do pai
+
+```{r}
+tabela("TX_RESP_Q08")
+tabela("TX_RESP_Q09")
+```
+
+Quanto maior a escolaridade da mãe, menor a proporção de alunos abaixo do básico: de 13,7% (mãe sem o 5º ano completo) a 3,7% (mãe com ensino superior) em LP. O padrão do pai é na mesma direção, porém mais fraco e menos regular. Um ponto importante: 48% dos alunos não sabem a escolaridade da mãe e 57% não sabem a do pai. Esse grupo "Não sei" tem proporção acima da média (9,5% em LP), o que indica que não se trata de falta de informação neutra.
+
+A escolaridade dos pais é um dos componentes do INSE, então esses resultados reforçam o anterior.
+
+Recomendação: manter a escolaridade da mãe, com a ressalva sobre o "Não sei"; a do pai pode sair, por acrescentar pouco.
+
+## Com quem o aluno mora
+
+```{r}
+tabela("TX_RESP_Q07a")
+tabela("TX_RESP_Q07b")
+```
+
+Não morar com a mãe está associado a uma proporção de alunos abaixo do básico duas vezes maior (13,9% contra 7,0% em LP). A ausência do pai tem efeito menor (10,1% contra 6,8%). Cerca de 10% dos alunos não moram com a mãe.
+
+Recomendação: manter apenas a variável da mãe.
+
+## Bens e acesso à internet
+
+```{r}
+tabela("TX_RESP_Q12g")
+tabela("TX_RESP_Q13b")
+```
+
+A quantidade de celulares com internet em casa mostra um gradiente claro: 21,4% dos alunos sem nenhum celular estão abaixo do básico em LP, contra 6,3% dos que têm três ou mais. Não ter Wi-Fi em casa está associado a uma proporção 2,5 vezes maior (17,5% contra 6,8%). Essas variáveis medem acesso digital, mas também são componentes do INSE.
+
+Recomendação: manter como um único resultado sobre acesso digital, ou retirar e deixar a mensagem para o INSE.
+
+## Infraestrutura do entorno e localização da escola
+
+```{r}
+tabela("TX_RESP_Q11a")
+tabela("TX_RESP_Q11c")
+tabela("TX_RESP_Q11b")
+tabela("ID_LOCALIZACAO")
+```
+
+Os alunos que moram em ruas sem asfalto (12,4% em LP) ou sem iluminação (12,9%) têm cerca do dobro da proporção abaixo do básico dos demais. Para água tratada, a diferença é menor. Os alunos de escolas rurais também têm proporção maior (12,6% contra 7,0% nas urbanas).
+
+Essas variáveis descrevem a vulnerabilidade do território onde o aluno vive e se sobrepõem entre si e com o INSE.
+
+Recomendação: manter de forma agrupada como "vulnerabilidade do entorno". Para Curitiba, a variável de localização tem pouca utilidade, pois os alunos da cidade são quase todos de escolas urbanas.
+
+## Tipo de escola desde o 1º ano
+
+```{r}
+tabela("TX_RESP_Q18")
+```
+
+O resultado do relatório indicava que alunos que estudaram somente em escola particular têm mais alunos abaixo do básico (14,5%) do que os de escola pública (7,0%) — o contrário do esperado. Cruzando a resposta com a rede da escola em que o aluno fez a prova, verifica-se que, dos 496 alunos que declararam ter estudado somente em escola particular, 375 estão matriculados em escola pública. Ou seja, a maior parte desse grupo não compreendeu a pergunta. Os alunos efetivamente matriculados em escolas privadas (156) têm apenas 1,3% abaixo do básico em LP.
+
+Esse resultado também mostra algo relevante: os alunos que responderam de forma inconsistente são justamente os de pior desempenho, o que é coerente com dificuldades de leitura.
+
+Recomendação: retirar a variável do relatório. Se for necessário comparar redes, usar a rede da escola (IN_PUBLICA), lembrando que a amostra tem poucos alunos de escolas privadas.
+
+## Meio de transporte para a escola
+
+```{r}
+tabela("TX_RESP_Q16")
+```
+
+Este é o exemplo apontado pelo professor: a categoria "metrô ou trem urbano" aparece com 71,4% de alunos abaixo do básico, mas tem apenas 7 alunos, e seu intervalo de confiança vai de 36% a 92% — não há informação suficiente para qualquer conclusão. O mesmo vale para "barco" (34 alunos). Nas categorias com alunos suficientes, quem vai de carro ou van tem as menores proporções (cerca de 4%), e quem vai a pé, de bicicleta ou de ônibus, as maiores (8% a 11%), padrão que reflete a renda da família.
+
+Recomendação: retirar. O que a variável mostra já está contido no INSE.
+
+## Envolvimento dos responsáveis
+
+```{r}
+tabela("TX_RESP_Q10c")
+tabela("TX_RESP_Q10e")
+tabela("TX_RESP_Q10f")
+tabela("TX_RESP_Q10a")
+```
+
+A grande maioria dos alunos (81% a 89%) afirma que os responsáveis sempre os incentivam a estudar e a ir às aulas. Por isso, essas variáveis distinguem pouco os alunos. O que elas mostram é um grupo pequeno de alto risco: os alunos que nunca ou quase nunca recebem incentivo para ir às aulas têm o dobro da proporção abaixo do básico (14,8% contra 6,9% em LP). A ida dos responsáveis às reuniões tem associação muito fraca. A leitura dos pais em casa não apresenta padrão coerente — os alunos cujos pais sempre leem têm a maior proporção abaixo do básico —, o que dificulta qualquer interpretação.
+
+Recomendação: manter apenas o incentivo para ir às aulas (e eventualmente o incentivo para estudar), destacando o grupo de baixo incentivo. Retirar reuniões e leitura.
+
+# Rotina
+
+## Trabalho fora de casa
+
+```{r}
+tabela("TX_RESP_Q21d")
+```
+
+14% dos alunos do 5º ano declaram usar parte do tempo, em dias de aula, para trabalhar fora de casa, um número elevado para crianças de cerca de 10 anos. Entre eles, a proporção abaixo do básico em LP é o dobro da dos demais (14% a 16%, contra 6,5%), independentemente da quantidade de horas. O que pesa é trabalhar, não quanto se trabalha.
+
+Recomendação: manter. É um resultado relevante para a SME, por envolver a questão do trabalho infantil.
+
+## Tempo de estudo, trabalho doméstico e lazer
+
+```{r}
+tabela("TX_RESP_Q21a")
+tabela("TX_RESP_Q21c")
+tabela("TX_RESP_Q21e")
+```
+
+O tempo de estudo tem forma de "U": os alunos que não estudam fora da escola (14,2% em LP) e os que estudam mais de 2 horas (12,9%) têm as maiores proporções abaixo do básico; os que estudam de 1 a 2 horas, a menor (5,0%). Uma interpretação possível, já levantada pelo grupo, é que os alunos com mais dificuldade precisam estudar mais — ou seja, o tempo de estudo seria consequência da dificuldade, e não sua causa. O trabalho doméstico apresenta o mesmo formato em "U", com efeito menor.
+
+O lazer apresenta o resultado mais contraintuitivo: os alunos que não têm nenhum tempo de lazer têm 23,4% abaixo do básico em LP, contra 6,4% dos que têm mais de 2 horas. É pouco provável que o lazer em si melhore o desempenho. Mais provável é que a falta de lazer indique uma rotina sobrecarregada (trabalho, cuidado com a casa ou com irmãos), ou seja, uma situação de vulnerabilidade.
+
+Recomendação: manter o lazer e o tempo de estudo, com essas interpretações; o trabalho doméstico pode sair. Cursos extracurriculares têm associação fraca e podem sair.
+
+# Escola e professores
+
+```{r}
+tabela("TX_RESP_Q23h")
+tabela("TX_RESP_Q23i")
+tabela("TX_RESP_Q23a")
+```
+
+As percepções do aluno sobre a escola mostram um padrão comum: a grande maioria concorda com as afirmações positivas, e os poucos que discordam totalmente concentram proporções muito mais altas de alunos abaixo do básico. O item mais forte é "meus professores acreditam que eu sou capaz de aprender": a proporção abaixo do básico em LP sobe de 6,2% (concordo totalmente) para 27,3% (discordo totalmente), um gradiente contínuo. O mesmo ocorre, com menor intensidade, para a motivação dada pelos professores e para o interesse pelo conteúdo.
+
+A direção dessa relação não é clara: o aluno pode ir mal por não se sentir apoiado, ou pode sentir que os professores não acreditam nele justamente porque vai mal. Ainda assim, para a SME, esse resultado aponta para a importância da relação professor–aluno e permite identificar alunos em risco a partir de como eles percebem a escola.
+
+```{r}
+tabela("TX_RESP_Q22g")
+tabela("TX_RESP_Q23d")
+```
+
+Os trabalhos em grupo e a sensação de segurança na escola não apresentam padrão claro: só os extremos ("nenhum professor" e "discordo totalmente") se diferenciam, e as associações são fracas.
+
+Recomendação: manter "professores acreditam que sou capaz" e "professores motivam"; o interesse pelo conteúdo pode entrar junto. Retirar trabalhos em grupo e segurança.
+
+# Curitiba × Brasil
+
+Os alunos de Curitiba têm notas médias cerca de 10 pontos mais altas que as do Brasil nas duas disciplinas, e a proporção abaixo do básico em LP (4,2%) está dentro da expectativa de 5%, ao contrário da de MT (6,8%). Como no Brasil, Matemática é o ponto mais frágil.
+
+Os gráficos por reprovação e por escolaridade da mãe mostram dois aspectos complementares:
+
+- Entre os alunos que reprovaram uma vez, a proporção abaixo do básico em Curitiba é cerca da metade da do Brasil (10,9% contra 20,9% em LP). Isso pode indicar que a rede da cidade consegue recuperar melhor o aluno reprovado, mas também pode refletir o perfil socioeconômico mais alto dos alunos de Curitiba; de todo modo, o aluno reprovado continua em situação pior que a dos que nunca reprovaram.
+- Já entre os filhos de mães com baixa escolaridade (até o 5º ano do fundamental), Curitiba não tem vantagem: as proporções abaixo do básico são iguais ou maiores que as do Brasil (por exemplo, 23,2% contra 17,5% em MT). Ou seja, a vantagem média de Curitiba não alcança os alunos de famílias com menor escolaridade, o que indica desigualdade interna. Esses grupos são pequenos em Curitiba (82 e 136 alunos), então o resultado deve ser confirmado.
+
+Além disso, os alunos de Curitiba têm perfil socioeconômico bem mais alto que os do Brasil, e, comparando alunos de mesmo nível do INSE, a diferença entre a cidade e o país diminui bastante. Parte importante da vantagem de Curitiba está associada a esse perfil.
+
+# Síntese: o que os resultados dizem sobre a hipótese
+
+A hipótese do trabalho se confirma parcialmente: várias características estão associadas a estar abaixo do nível básico, mas com intensidades bem diferentes.
+
+1. Trajetória escolar: reprovação, idade acima da esperada para a série e abandono são os fatores mais associados. São também os mais fáceis de observar pela escola.
+2. Nível socioeconômico: o INSE mostra o gradiente mais claro, e boa parte das variáveis de família, bens e entorno repete essa mesma mensagem.
+3. Vulnerabilidade da rotina: trabalhar fora de casa e não ter tempo de lazer estão associados a proporções duas a três vezes maiores de alunos abaixo do básico.
+4. Relação com a escola: alunos que não se sentem apoiados pelos professores concentram proporções muito altas, embora sejam poucos.
+5. Inclusão: alunos com deficiência e TEA têm o dobro da proporção abaixo do básico.
+
+Por outro lado, sexo, cor/raça, envolvimento dos pais em reuniões, leitura em casa, segurança e trabalhos em grupo mostram associações fracas ou sem padrão claro, e algumas variáveis (tipo de escola, altas habilidades, meio de transporte) não são confiáveis por problemas de compreensão das perguntas ou por grupos pequenos.
+
+# Resumo das recomendações para o relatório final
+
+```{r}
+tribble(
+  ~Variável,                                 ~Recomendação,         ~Motivo,
+  "Notas e alunos abaixo do básico",         "Manter",              "Dimensiona o problema",
+  "Reprovação",                              "Manter",              "Fator mais associado",
+  "Idade",                                   "Manter",              "Distorção idade-série",
+  "Abandono / idade de entrada",             "Manter (resumido)",   "Complementam a trajetória escolar",
+  "INSE",                                    "Manter",              "Gradiente mais claro; referência para as demais",
+  "Escolaridade da mãe",                     "Manter",              "Gradiente claro, com ressalva do 'Não sei'",
+  "Mora com a mãe",                          "Manter",              "Dobra a proporção abaixo do básico",
+  "Trabalho fora de casa",                   "Manter",              "Dobra a proporção; tema relevante para a SME",
+  "Lazer e tempo de estudo",                 "Manter",              "Indicam rotina sobrecarregada / dificuldade",
+  "Professores acreditam / motivam",         "Manter",              "Gradiente forte; relação professor–aluno",
+  "Deficiência e TEA",                       "Incluir",             "Relevante para educação inclusiva",
+  "Entorno (asfalto, iluminação) e rural",   "Manter (agrupado)",   "Vulnerabilidade do território",
+  "Celulares / Wi-Fi",                       "Opcional",            "Acesso digital; repete o INSE",
+  "Incentivo dos pais (aulas)",              "Manter (resumido)",   "Identifica grupo pequeno de alto risco",
+  "Sexo",                                    "Observação breve",    "Diferença entre LP e MT",
+  "Escolaridade do pai",                     "Retirar",             "Repete a da mãe, mais fraca",
+  "Cor/raça",                                "Retirar",             "Associação fraca, ligada ao nível socioeconômico",
+  "Tipo de escola",                          "Retirar",             "Respostas inconsistentes",
+  "Altas habilidades",                       "Retirar",             "Item não compreendido pelos alunos",
+  "Meio de transporte",                      "Retirar",             "Categorias pequenas; repete o INSE",
+  "Água tratada",                            "Retirar",             "Associação fraca",
+  "Reuniões, leitura dos pais",              "Retirar",             "Fraca ou sem padrão",
+  "Trabalho doméstico, cursos",              "Retirar",             "Fraca ou sem padrão",
+  "Trabalhos em grupo, segurança",           "Retirar",             "Fraca ou sem padrão"
+) %>%
+  knitr::kable()
+```
