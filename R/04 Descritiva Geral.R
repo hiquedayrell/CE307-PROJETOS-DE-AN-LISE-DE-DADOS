@@ -635,10 +635,38 @@ treino %>%
        y = "Proporção") +
   scale_fill_viridis(discrete = T, option = "E") +
   scale_y_continuous(labels = scales::percent) +
-  theme_minimal()
+  theme_minimal() 
 
 #Observa-se um aumento na quantidade de horas de estudo por dia conforme o incentivo é mais presente
-#pode indicar forte relação entre essas variáveis
+#o gráfico explica a importância do incentivo dos pais, já que as horas de estudo estão diretamente relacionadas
+#com a proficiência 
+
+#-----------------------------------------------------
+#Escolaridade dos responsáveis com incentivo a estudos
+#-----------------------------------------------------
+
+treino %>%
+  mutate(incentivo_num = case_when(
+    TX_RESP_Q10c == "A" ~ 1,  # Nunca ou quase nunca
+    TX_RESP_Q10c == "B" ~ 2,  # De vez em quando
+    TX_RESP_Q10c == "C" ~ 3,  # Sempre ou quase sempre
+  )
+  ) %>%
+  group_by(TX_RESP_Q08, TX_RESP_Q09) %>%
+  summarise(incentivo_medio = mean(incentivo_num, na.rm = TRUE), n = n(), .groups = "drop") %>%
+  ggplot(aes(x = TX_RESP_Q09, y = TX_RESP_Q08, fill = incentivo_medio)) +
+  geom_tile() +
+  scale_fill_viridis_c(option = "C") +
+  labs(x = "Escolaridade do pai", y = "Escolaridade da mãe", fill = "Incentivo\nmédio (1-3)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#OBJETIVO:
+#Observar se o incentivo muda conforme a escolaridade dos responsáveis 
+#Conforme o gráfico "Incentivo X Horas de estudo", è possível observar que conforme o incentivo aumenta,
+#o tempo voltado ao estudo também tende a aumentar (variáveis diretamente relacionada com a proficiência)
+
+
 
 #------------------------------
 #Tempo de estudo por reprovação
@@ -688,7 +716,7 @@ treino %>%
 #Apesar da coluna "Nenhuma" aumentar no grupo de "Duas reprovações ou mais" comparado com os outros
 #o nível da coluna "Duas horas de estudo" é o maior em relação aos outros grupos. Talvez a maioria 
 #dos alunos reprovados realmente estude menos, mas uma fração desse grupo pode ter mais dificuldade e precise estudar mais
-#A hipótese inicial não precisa ser descartada
+#o número de alunos que reporvaram duas vezes ou mais e estudam duas horas ou mais precisa ser levado em conta
 
 #-------------------
 #INSE com reprovação
@@ -757,6 +785,7 @@ treino %>%
   theme_minimal()
 
 #A proporção de pessoas que abandonam a escola vai diminuindo conforme o Inse aumente, menos no nível 8, contraintuitivamente.
+#Explora a relação, previamente observada, que o INSE e o abandono da escola têm com a proficiência
 
 #------------------
 #Idade com abandono
@@ -797,6 +826,13 @@ treino %>%
        y = "Proporção") +
   scale_fill_viridis_d(option = "E") +
   scale_y_continuous(labels = scales::percent) +
+  scale_x_discrete(
+    labels = c(
+      "9 ou menos" = "9 ou menos\n(n = 46)",
+      "10 e 11" = "10 e 11\n(n = 8348)",
+      "12 ou mais" = "12 ou mais\n(n = 668)"
+    )
+  ) +
   theme_minimal()
   
 
@@ -820,9 +856,7 @@ treino %>%
   theme_ipsum() +
   facet_wrap(~Horas_trabalho) +
   theme(
-    legend.position="none",
-    panel.spacing = unit(0.1, "lines"),
-    axis.ticks.x=element_blank()
+    panel.spacing = unit(0.1, "lines")
   )
 
 #OBJETIVO DO GRÁFICO:
@@ -836,35 +870,33 @@ treino %>%
 #Inse com as horas/dia de trabalho fora de casa
 #----------------------------------------------
 
-
-
-#-----------------------------------------------------
-#Escolaridade dos responsáveis com incentivo a estudos
-#-----------------------------------------------------
-
 treino %>%
-  mutate(escolaridade_responsaveis = case_when(
-    TX_RESP_Q08 %in% c("A") | TX_RESP_Q09 %in% c("A") ~ "Não completou o 5° ano EF",
-    TX_RESP_Q08 %in% c("B") ~ "EF até o 5° ano",
-    TX_RESP_Q08 %in% c("C") ~ "Ensino Fundamental completo",
-    TX_RESP_Q08 %in% c("D") ~ "Ensino Médio completo",
-    TX_RESP_Q08 %in% c("E") ~ "Ensino Superior completo",
-    TX_RESP_Q08 %in% c("F") ~ "Não sabe"
+  mutate(Horas_trabalho = case_when(
+    TX_RESP_Q21d %in% c("A") ~ "Nenhuma",
+    TX_RESP_Q21d %in% c("B") ~ "Menos de 1 hora",
+    TX_RESP_Q21d %in% c("C") ~ "Entre 1 e 2 horas",
+    TX_RESP_Q21d %in% c("D") ~ "2 ou mais horas",
   ),
-  escolaridade_responsaveis = factor(
-    escolaridade_responsaveis,
-    levels = c("Não completou o 5° ano EF", "EF até o 5° ano","Ensino Fundamental completo","Ensino Médio completo","Ensino Superior completo","Não sabe")
-  ),
-  Incentivo = case_when(
-    TX_RESP_Q10c %in% c("A") ~ "Nunca ou quase nunca",
-    TX_RESP_Q10c %in% c("B") ~ "De vez em quando",
-    TX_RESP_Q10c %in% c("C") ~ "Sempre ou quase sempre",
-  ),
-  Incentivo = factor(
-    Incentivo,
-    levels = c("Nunca ou quase nunca", "De vez em quando", "Sempre ou quase sempre")
-  )) %>%
-  group_by(escolaridade_responsaveis, Incentivo)
+  Horas_trabalho = factor(
+    Horas_trabalho,
+    levels = c("Nenhuma", "Menos de 1 hora", "Entre 1 e 2 horas", "2 ou mais horas")
+  )
+  ) %>%
+  group_by(NU_TIPO_NIVEL_INSE, Horas_trabalho) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  group_by(NU_TIPO_NIVEL_INSE) %>%
+  mutate(
+    total = sum(n),
+    proporção = n/total
+  ) %>%
+  ungroup() %>%
+  ggplot(aes(fill = Horas_trabalho, y = proporção, x = NU_TIPO_NIVEL_INSE)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  labs(title = "Proporção de Horas/dia de trabalho fora de casa por nível do INSE",
+       y = "Proporção") +
+  scale_fill_viridis_d(option = "E") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_minimal()
 
 
 #OUTRAS ANÁlISES
