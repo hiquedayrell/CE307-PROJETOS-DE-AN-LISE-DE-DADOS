@@ -504,7 +504,7 @@ treino %>%
 #Tentar explicar porque nas faixas de idade elevadas a proporção de alunos abaixo do básico é maior
 #A mesma coisa ocorre com as horas de trabalho fora de casa
 #Talvez quem trabalha mais estuda menos
-#Vamos explorar essa relação com o
+#Vamos explorar essa relação com o próximo gráfico
 
 #-------------------------------------------------
 #Relação entre tempo de estudo e tempo trabalhando
@@ -550,6 +550,48 @@ treino %>%
 #Esperava-se que conforme mais horas trabalhadas, o estudante estudaria menos, mas não se observa isso
 # A proporção de alunos abaixo do básico é maior conforme as horas trabalhadas aumentam
 # Talvez o aluno que trabalhe mais tenha mais dificuldade e estude mais, 
+
+#------------------------------------------------------
+#Relação entre tempo de trabalho e tempo de lazer
+#------------------------------------------------------
+
+treino %>%
+  mutate(Horas_trabalho = case_when(
+    TX_RESP_Q21d %in% c("A") ~ "Nenhuma",
+    TX_RESP_Q21d %in% c("B") ~ "Menos de 1 hora",
+    TX_RESP_Q21d %in% c("C") ~ "Entre 1 e 2 horas",
+    TX_RESP_Q21d %in% c("D") ~ "2 ou mais horas",
+  ),
+  Horas_trabalho = factor(
+    Horas_trabalho,
+    levels = c("Nenhuma", "Menos de 1 hora", "Entre 1 e 2 horas", "2 ou mais horas")
+  ), 
+  lazer = case_when(
+    TX_RESP_Q21e %in% c("A") ~ "Nenhuma",
+    TX_RESP_Q21e %in% c("B") ~ "Menos de 1 hora",
+    TX_RESP_Q21e %in% c("C") ~ "Entre 1 e 2 horas",
+    TX_RESP_Q21e %in% c("D") ~ "2 ou mais horas",
+  ),
+  lazer = factor(
+    lazer,
+    levels = c("Nenhuma", "Menos de 1 hora", "Entre 1 e 2 horas", "2 ou mais horas")
+  )
+  )%>%
+  group_by(Horas_trabalho, lazer) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  group_by(Horas_trabalho) %>%
+  mutate(
+    total = sum(n),
+    proporção = n / total
+  ) %>%
+  ungroup() %>%
+  ggplot(aes(fill = lazer, y = proporção, x = Horas_trabalho)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  labs(title = "Relação entre horas por dia de estudo e lazer",
+       y = "Proporção") +
+  scale_fill_viridis(discrete = T, option = "E") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_minimal()
 
 #------------------------------------------------------
 #Quem não tem a mãe/pai em casa tem que trabalhar?
@@ -636,6 +678,9 @@ treino %>%
   scale_fill_viridis(discrete = T, option = "E") +
   scale_y_continuous(labels = scales::percent) +
   theme_minimal() 
+
+#OBJETIVO:
+#Analisar se o incentivo dos pais realmente faz efeito no comportamento do aluno.
 
 #Observa-se um aumento na quantidade de horas de estudo por dia conforme o incentivo é mais presente
 #o gráfico explica a importância do incentivo dos pais, já que as horas de estudo estão diretamente relacionadas
@@ -749,8 +794,42 @@ treino %>%
   scale_y_continuous(labels = scales::percent) +
   theme_minimal()
   
+#
+
 #O número de reporvações é mais alto nos niveis socioeconomicos mais baixos. As duas variáveis estão relacionadas com a proficiência
 # e também possuem algum tipo de relação
+
+#----------------------------------------------
+#Inse com as horas/dia de trabalho fora de casa
+#----------------------------------------------
+
+treino %>%
+  mutate(Horas_trabalho = case_when(
+    TX_RESP_Q21d %in% c("A") ~ "Nenhuma",
+    TX_RESP_Q21d %in% c("B") ~ "Menos de 1 hora",
+    TX_RESP_Q21d %in% c("C") ~ "Entre 1 e 2 horas",
+    TX_RESP_Q21d %in% c("D") ~ "2 ou mais horas",
+  ),
+  Horas_trabalho = factor(
+    Horas_trabalho,
+    levels = c("Nenhuma", "Menos de 1 hora", "Entre 1 e 2 horas", "2 ou mais horas")
+  )
+  ) %>%
+  group_by(NU_TIPO_NIVEL_INSE, Horas_trabalho) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  group_by(NU_TIPO_NIVEL_INSE) %>%
+  mutate(
+    total = sum(n),
+    proporção = n/total
+  ) %>%
+  ungroup() %>%
+  ggplot(aes(fill = Horas_trabalho, y = proporção, x = NU_TIPO_NIVEL_INSE)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  labs(title = "Proporção de Horas/dia de trabalho fora de casa por nível do INSE",
+       y = "Proporção") +
+  scale_fill_viridis_d(option = "E") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_minimal()
 
 #---------------------------
 #INSE com abandono da escola
@@ -865,38 +944,6 @@ treino %>%
 #Pode indicar que os alunos nos níveis mais baixos precisam trabalhar e não conseguem se dedicar nos estudos
 
 #O gráfico não indica uma relação forte entre essas variáveis, talvez a hipótese inicial possa ser descartada
-
-#----------------------------------------------
-#Inse com as horas/dia de trabalho fora de casa
-#----------------------------------------------
-
-treino %>%
-  mutate(Horas_trabalho = case_when(
-    TX_RESP_Q21d %in% c("A") ~ "Nenhuma",
-    TX_RESP_Q21d %in% c("B") ~ "Menos de 1 hora",
-    TX_RESP_Q21d %in% c("C") ~ "Entre 1 e 2 horas",
-    TX_RESP_Q21d %in% c("D") ~ "2 ou mais horas",
-  ),
-  Horas_trabalho = factor(
-    Horas_trabalho,
-    levels = c("Nenhuma", "Menos de 1 hora", "Entre 1 e 2 horas", "2 ou mais horas")
-  )
-  ) %>%
-  group_by(NU_TIPO_NIVEL_INSE, Horas_trabalho) %>%
-  summarise(n = n(), .groups = "drop") %>%
-  group_by(NU_TIPO_NIVEL_INSE) %>%
-  mutate(
-    total = sum(n),
-    proporção = n/total
-  ) %>%
-  ungroup() %>%
-  ggplot(aes(fill = Horas_trabalho, y = proporção, x = NU_TIPO_NIVEL_INSE)) +
-  geom_bar(position = "dodge", stat = "identity") +
-  labs(title = "Proporção de Horas/dia de trabalho fora de casa por nível do INSE",
-       y = "Proporção") +
-  scale_fill_viridis_d(option = "E") +
-  scale_y_continuous(labels = scales::percent) +
-  theme_minimal()
 
 
 #OUTRAS ANÁlISES
