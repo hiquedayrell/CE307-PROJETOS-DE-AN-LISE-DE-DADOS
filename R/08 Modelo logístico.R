@@ -111,8 +111,16 @@ coeficientes <- map(modelos, \(m) {
 coeficientes$LP %>% mutate(across(where(is.numeric), \(x) round(x, 3))) %>% print(n = Inf, width = Inf)
 coeficientes$MT %>% mutate(across(where(is.numeric), \(x) round(x, 3))) %>% print(n = Inf, width = Inf)
 
-write.csv(coeficientes$LP, "data/modelo/modelo_grupo_LP.csv", row.names = FALSE)
-write.csv(coeficientes$MT, "data/modelo/modelo_grupo_MT.csv", row.names = FALSE)
+# Grava com 10 algarismos significativos: os últimos dígitos mudam de uma
+# máquina para outra e fariam o git acusar diferença a cada execução.
+grava <- function(tabela, arquivo) {
+  tabela %>%
+    mutate(across(where(is.double), \(x) signif(x, 10))) %>%
+    write.csv(arquivo, row.names = FALSE)
+}
+
+grava(coeficientes$LP, "data/modelo/modelo_grupo_LP.csv")
+grava(coeficientes$MT, "data/modelo/modelo_grupo_MT.csv")
 
 
 # ---------------------------------------------------------------------
@@ -176,7 +184,7 @@ verificacao %>%
 
 verificacao %>% filter(!mesma_direcao)   # onde o teste discorda do modelo
 
-write.csv(verificacao, "data/modelo/verificacao_teste.csv", row.names = FALSE)
+grava(verificacao, "data/modelo/verificacao_teste.csv")
 
 
 ## 4.2 Calibração por número de fatores -----------------------------------

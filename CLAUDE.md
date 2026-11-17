@@ -34,6 +34,12 @@ Relatórios em `Entregas/` (R Markdown). O principal é
 alunos abaixo do básico") define 18 variáveis dicotômicas em um `tribble`
 (bloco, grupo, variável do questionário, códigos).
 
+O relatório do modelo é `Entregas/relatorio_modelo.Rmd`. Ele não reestima nada:
+dá `source()` no `R/08` e só formata os objetos do script, então qualquer
+mudança no modelo deve ser feita no `R/08`. Os `.html` não são versionados.
+Para renderizar fora do RStudio, o pandoc é o do Quarto:
+`RSTUDIO_PANDOC=<Quarto>/bin/tools Rscript -e 'rmarkdown::render("Entregas/relatorio_modelo.Rmd")'`.
+
 ## Pedido do professor (áudio, nov/2026)
 
 O professor estimou duas regressões logísticas (LP e MT) com as variáveis
@@ -73,7 +79,17 @@ Saídas em `data/modelo/`: `modelo_grupo_LP.csv`, `modelo_grupo_MT.csv`,
   LP, ambas com poucos casos: não mora com a mãe (5 em 99) e deficiência (1 em 32).
 - Calibração no teste por número de fatores, LP: 0 → 2,3%; 1 → 6,8%; 2 → 10,8%;
   3 → 9,2%; 4 ou mais → 24,7%. MT: 4,7%; 8,5%; 17,1%; 16,9%; 29,1%.
-- AUC no teste: 0,71 (LP) e 0,71 (MT).
+- AUC no teste: 0,71 (LP) e 0,71 (MT). No treino: 0,74 e 0,71.
+- Conferido em 16/11/2026: o `R/08` rodado na máquina do Henrique (R 4.4.3)
+  reproduz todos os números acima.
+- Teste com IC de Wilson: em 13 variáveis de LP e 12 de MT o intervalo do grupo
+  fica inteiro acima da proporção dos demais. Nas duas exceções de LP o
+  intervalo contém a proporção dos demais (não dá para afirmar direção
+  contrária), mas não alcança a proporção do treino (13,9% e 17,7%).
+- Calibração: em todas as faixas de número de fatores, a probabilidade prevista
+  cai dentro do IC de 95% da proporção observada, nas duas disciplinas.
+- Modelo completo (18 variáveis): mãe até o 5º ano tem razão de chances de 1,02
+  (LP) e 1,18 (MT); abandono entra em LP com p = 0,047 e sai em MT com p = 0,237.
 
 ## Sobre as planilhas do professor
 
@@ -87,18 +103,28 @@ Saídas em `data/modelo/`: `modelo_grupo_LP.csv`, `modelo_grupo_MT.csv`,
   desfavorável = trabalha fora; Trabalho doméstico = sem lazer; Rotina pessoal
   desfavorável = não estuda; Relação desfavorável com a escola = professores
   não acreditam; Indicador familiar = pouco incentivo.
+- Comparação no relatório: 22 pares de variáveis (12 em LP, 10 em MT); em todos
+  a nossa razão de chances cai dentro do IC de 95% do professor. Erros-padrão
+  dele 16% maiores na mediana (amostra de cerca de 75% do nosso treino).
 - Em dúvida: "Responsável sem ocupação indicada" e "Baixa escolaridade
   responsável 2" (provavelmente não mora com a mãe e sem Wi-Fi); "Indicador de
   inclusão 1" (deficiência ou TEA).
 - DECISÃO (Henrique, 17/11/2026): não perguntar ao professor; seguir com o
   nosso modelo pela metodologia dele e usar as planilhas como comparação.
 
+## Decisões de implementação
+
+- 16/11/2026: o `R/08` grava os CSVs de `data/modelo/` com 10 algarismos
+  significativos (função `grava`). Antes, os últimos dígitos mudavam de uma
+  máquina para outra e o git acusava diferença a cada execução.
+- 16/11/2026: o patch da sessão anterior foi aplicado na branch
+  `modelo-logistico` (já no GitHub). O trabalho do modelo segue nessa branch.
+
 ## Próximos passos
 
-1. Trabalhar em cima do `R/08` e registrar aqui o que for decidido.
-2. Escrever o relatório do modelo (R Markdown em `Entregas/`): metodologia do
-   professor, interpretação das razões de chances, verificação no teste.
-3. Apresentação final em 02/12/2026: 8 minutos, roteiro de 5 slides,
+1. Feito: relatório do modelo em `Entregas/relatorio_modelo.Rmd`. Falta a
+   revisão do grupo.
+2. Apresentação final em 02/12/2026: 8 minutos, roteiro de 5 slides,
    todos os integrantes falam. Deck criado e ainda vazio:
    https://claude.ai/artifact/4bemDADkDxAS3gmjKvqmGf
 
