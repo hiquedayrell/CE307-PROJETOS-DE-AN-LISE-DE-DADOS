@@ -26,8 +26,8 @@ Língua Portuguesa e Matemática?
 
 01 preparação da base · 02 separação treino/teste · 03 teste de viés ·
 04 descritiva geral · 05 base Curitiba · 06 comparação Curitiba ·
-07 fatores associados · 08 modelo logístico (estimação, interpretação e
-verificação no teste).
+07 fatores associados · 08 modelo logístico (estimação e interpretação; a
+verificação no teste foi retirada em 17/11/2026, ver Decisões).
 
 Relatórios em `Entregas/` (R Markdown). O principal é
 `relatorio_descritivo_revisado.Rmd`; a seção 4 ("Quais grupos concentram mais
@@ -60,12 +60,12 @@ Implementada em `R/08 Modelo logístico.R`:
 2. Ajustar a regressão logística com as 18 no treino (uma para LP, outra para MT).
 3. Manter as variáveis com p < 0,05 e reestimar.
 4. Interpretar pela razão de chances, `exp(beta)`, com IC de 95% (Wald).
-5. Verificar no teste: proporção abaixo do básico de quem tem a característica
-   contra a de quem não tem; calibração por número de fatores; AUC.
-6. Comparar com os coeficientes do professor.
+5. (Retirado, aguardando o professor) Verificar no teste: proporção abaixo do
+   básico de quem tem a característica contra a de quem não tem; calibração
+   por número de fatores; AUC.
+6. (Retirado, aguardando o professor) Comparar com os coeficientes do professor.
 
-Saídas em `data/modelo/`: `modelo_grupo_LP.csv`, `modelo_grupo_MT.csv`,
-`verificacao_teste.csv`.
+Saídas em `data/modelo/`: `modelo_grupo_LP.csv` e `modelo_grupo_MT.csv`.
 
 ## Resultados até aqui (treino 9.062, teste 1.006)
 
@@ -75,6 +75,9 @@ Saídas em `data/modelo/`: `modelo_grupo_LP.csv`, `modelo_grupo_MT.csv`,
 - Maiores razões de chances em LP: professores não acreditam (1,90), trabalha
   fora (1,87), reprovou (1,85), 12 anos ou mais (1,80). Em MT: TEA (2,08),
   INSE I e II (2,04), reprovou (2,02), entrada com 8 anos ou mais (1,85).
+- Os itens abaixo sobre o teste e a comparação são da versão anterior do `R/08`
+  (commit 8a6d632), retirada em 17/11/2026. Ficam como registro do que já foi
+  calculado.
 - Teste, mesma direção do modelo: 15 de 15 em MT; 13 de 15 em LP. Exceções em
   LP, ambas com poucos casos: não mora com a mãe (5 em 99) e deficiência (1 em 32).
 - Calibração no teste por número de fatores, LP: 0 → 2,3%; 1 → 6,8%; 2 → 10,8%;
@@ -123,15 +126,25 @@ Saídas em `data/modelo/`: `modelo_grupo_LP.csv`, `modelo_grupo_MT.csv`,
   Motivo: no RStudio do Henrique, rodar o script por seleção (Ctrl+Enter)
   quebrava no `tribble` com "unexpected symbol", porque o texto acentuado
   chegava ao R em outra codificação. Manter assim ao editar o script.
+- 17/11/2026 (Henrique): o `R/08` e o relatório do modelo vão só até a
+  interpretação das razões de chances. A verificação na base de teste (seção 4
+  do script) e a comparação com as planilhas do professor (seção 5) foram
+  retiradas, e o script não lê mais `data/teste.csv`. Motivo: discutir com o
+  professor o que fazer com a base de teste e as próximas etapas antes de
+  usá-la. O código retirado está no commit 8a6d632. Saiu também
+  `data/modelo/verificacao_teste.csv`. As planilhas do professor continuam em
+  `data/modelo/`.
 - 17/11/2026 (Henrique): o trabalho é feito direto no `main`, só com commits,
   sem branches nem pull requests. A branch `modelo-logistico` já foi
   incorporada ao `main`.
 
 ## Próximos passos
 
-1. Feito: relatório do modelo em `Entregas/relatorio_modelo.Rmd`. Falta a
-   revisão do grupo.
-2. Apresentação final em 02/12/2026: 8 minutos, roteiro de 5 slides,
+1. Reunião com o professor: o que fazer com a base de teste, a comparação
+   com as planilhas dele e as etapas seguintes.
+2. Relatório do modelo em `Entregas/relatorio_modelo.Rmd` (até a
+   interpretação): falta a revisão do grupo.
+3. Apresentação final em 02/12/2026: 8 minutos, roteiro de 5 slides,
    todos os integrantes falam. Deck criado e ainda vazio:
    https://claude.ai/artifact/4bemDADkDxAS3gmjKvqmGf
 

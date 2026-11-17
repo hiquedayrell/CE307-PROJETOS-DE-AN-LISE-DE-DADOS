@@ -22,13 +22,12 @@ library(tidyverse)
 library(scales)
 
 # Toda a estimação está em R/08 Modelo logístico.R. O relatório só lê os
-# objetos que o script cria (grupos, modelos, coeficientes, verificacao etc.),
+# objetos que o script cria (grupos, modelos, coeficientes etc.),
 # para que os números do texto sejam sempre os do script.
 source("R/08 Modelo logístico.R", encoding = "UTF-8")
 
 cor_lp    <- "#2E6F9E"
 cor_mt    <- "#D17A22"
-cor_risco <- "#B03A2E"
 cores      <- c("Língua Portuguesa" = cor_lp, "Matemática" = cor_mt)
 nome_disc  <- c(LP = "Língua Portuguesa", MT = "Matemática")
 
@@ -43,19 +42,6 @@ num <- function(x, d = 0) number(x, accuracy = 10^-d, decimal.mark = ",", big.ma
 eixo_pct <- label_percent(decimal.mark = ",")
 p_fmt <- function(p) if_else(p < 0.001, "< 0,001", num(p, 3))
 
-# Intervalo de confiança de 95% de Wilson para uma proporção
-wilson <- function(x, n, z = 1.96) {
-  p      <- x / n
-  centro <- (p + z^2 / (2 * n)) / (1 + z^2 / n)
-  margem <- z * sqrt(p * (1 - p) / n + z^2 / (4 * n^2)) / (1 + z^2 / n)
-  tibble(p = p, li = centro - margem, ls = centro + margem)
-}
-
-com_ic <- function(x, n) {
-  w <- wilson(x, n)
-  sprintf("%s (%s a %s)", num(100 * w$p, 1), num(100 * w$li, 1), num(100 * w$ls, 1))
-}
-
 or_ic <- function(or, li, ls) {
   if_else(is.na(or), "", sprintf("%s (%s a %s)", num(or, 2), num(li, 2), num(ls, 2)))
 }
@@ -67,8 +53,6 @@ finais <- bind_rows(coeficientes, .id = "disc") %>% filter(nome != "(Intercept)"
 OR <- function(v, disc = "LP") num(finais$odds_ratio[finais$nome == v & finais$disc == disc], 2)
 base <- map_dbl(modelos, \(m) plogis(coef(m$final)[["(Intercept)"]]))
 PR <- function(disc, ...) pct(unname(exemplo(modelos[[disc]], ...)))
-VT <- function(v, disc, coluna) verificacao[[coluna]][verificacao$nome == v & verificacao$disciplina == disc]
-rotulo <- function(v) grupos$grupo[match(v, grupos$nome)]
 
 completos <- map_dfr(modelos, \(m) tabela_modelo(m$completo), .id = "disc") %>%
   filter(nome != "(Intercept)")
@@ -85,15 +69,15 @@ Este relatório traz a etapa de modelagem, que responde a essa pergunta com uma 
 1. interpretar cada variável pela razão de chances;
 2. verificar na base de teste, agrupando os alunos pela característica e calculando proporções condicionais, se os dados vão na mesma direção do modelo.
 
-Reproduzimos o procedimento do professor com as nossas bases de treino e teste, fizemos as duas tarefas com o modelo estimado por nós e, ao final, comparamos os nossos coeficientes com os das planilhas dele.
+Reproduzimos o procedimento do professor com a nossa base de treino e fizemos a primeira tarefa, a interpretação, com o modelo estimado por nós. A verificação na base de teste e a comparação com as planilhas do professor ficam para depois de discutirmos com ele como usar a base de teste.
 
 # Dados e metodologia
 
 ## Bases
 
-As bases são as mesmas do relatório descritivo: amostra do Saeb 2023 com `r num(nrow(treino) + nrow(teste))` alunos do 5º ano, dividida em treino (`r num(nrow(treino))` alunos) e teste (`r num(nrow(teste))` alunos), com sorteio estratificado pelas duas variáveis resposta. O modelo foi estimado só com o treino. O teste não participou de nenhuma escolha e foi usado apenas na verificação.
+As bases são as mesmas do relatório descritivo: amostra do Saeb 2023 com 10.068 alunos do 5º ano, dividida em treino (`r num(nrow(treino))` alunos) e teste (1.006 alunos), com sorteio estratificado pelas duas variáveis resposta. O modelo foi estimado só com o treino. A base de teste ainda não foi usada.
 
-As variáveis resposta são `abaixo_LP` (proficiência em Língua Portuguesa até 150) e `abaixo_MT` (proficiência em Matemática até 175). No treino, `r pct(mean(treino$abaixo_LP))` dos alunos estão abaixo do básico em LP e `r pct(mean(treino$abaixo_MT))` em MT. No teste, `r pct(mean(teste$abaixo_LP))` e `r pct(mean(teste$abaixo_MT))`.
+As variáveis resposta são `abaixo_LP` (proficiência em Língua Portuguesa até 150) e `abaixo_MT` (proficiência em Matemática até 175). No treino, `r pct(mean(treino$abaixo_LP))` dos alunos estão abaixo do básico em LP e `r pct(mean(treino$abaixo_MT))` em MT.
 
 ## Variáveis explicativas
 
@@ -128,12 +112,6 @@ O objetivo desta etapa é entender o processo. A seleção pelo valor-p em uma �
 ## Razão de chances
 
 A razão de chances de uma variável é $e^{\beta_j}$. Ela diz por quanto a chance de estar abaixo do básico é multiplicada quando o aluno tem a característica, comparado a um aluno igual nas outras variáveis do modelo e que não a tem. Uma razão de 1 indica que a característica não muda a chance, e uma razão de 1,50 indica chance 50% maior. O intervalo de confiança de 95% foi calculado pelo método de Wald, $e^{\beta_j \pm 1{,}96 \, EP}$. Se o intervalo não contém o 1, a variável é significativa a 5%.
-
-## Verificação no teste
-
-Para cada variável do modelo final, os alunos do teste foram separados em dois grupos, os que têm a característica e os que não têm, e calculamos a proporção abaixo do básico em cada um. Se a razão de chances é maior que 1, espera-se que a proporção seja maior entre os que têm a característica.
-
-Acrescentamos duas verificações do modelo como um todo: a calibração, que compara a proporção observada no teste com a probabilidade prevista, agrupando os alunos pelo número de fatores que acumulam, e a AUC, que mede o quanto o modelo ordena bem os alunos por risco.
 
 # Seleção das variáveis
 
@@ -228,197 +206,7 @@ tibble(Perfil = names(perfis),
 
 Em LP, o aluno que só reprovou passa de `r PR("LP")` para `r PR("LP", "reprovou")`. A chance foi multiplicada por `r OR("reprovou")` e a probabilidade, por `r num(unname(exemplo(modelos$LP, "reprovou")) / base[["LP"]], 2)`, valores ainda próximos. Quando os fatores se acumulam, as razões se multiplicam: reprovar e ter 12 anos ou mais multiplica a chance por `r OR("reprovou")` × `r OR("idade_12")` = `r num(prod(finais$odds_ratio[finais$disc == "LP" & finais$nome %in% c("reprovou", "idade_12")]), 2)`. No perfil com quatro fatores, a probabilidade prevista em MT chega a `r PR("MT", perfis[[5]])`, cerca de `r num(unname(exemplo(modelos$MT, perfis[[5]])) / base[["MT"]])` vezes a do aluno sem nenhum fator, enquanto a chance é `r num(prod(finais$odds_ratio[finais$disc == "MT" & finais$nome %in% perfis[[5]]]))` vezes maior.
 
-O modelo supõe que as razões se multiplicam sem interação entre as variáveis. É uma simplificação, e a calibração da seção seguinte mostra o quanto ela se sustenta no teste.
-
-# Verificação na base de teste
-
-## Proporções condicionais
-
-No gráfico, o ponto vermelho é a proporção abaixo do básico entre os alunos do teste que têm a característica, com a faixa clara indicando o intervalo de confiança de 95% (Wilson), e o ponto cinza é a proporção entre os que não têm. O modelo acerta a direção quando o ponto vermelho fica à direita do cinza.
-
-```{r fig-verificacao, fig.height = 7.5}
-verificacao %>%
-  mutate(disciplina = nome_disc[disciplina],
-         rotulo = paste0(grupo, " (n = ", alunos_grupo, ")"),
-         wilson(abaixo_grupo, alunos_grupo)) %>%
-  ggplot(aes(y = fct_reorder(rotulo, p))) +
-  geom_segment(aes(x = prop_demais, xend = p, yend = fct_reorder(rotulo, p)),
-               color = "grey78", linewidth = 0.9) +
-  geom_linerange(aes(xmin = li, xmax = ls), color = cor_risco, alpha = 0.3, linewidth = 3.2) +
-  geom_point(aes(x = prop_demais, color = "Alunos sem a característica"), size = 2.4) +
-  geom_point(aes(x = p, color = "Alunos com a característica"), size = 3) +
-  facet_wrap(~ disciplina, scales = "free_y") +
-  scale_color_manual(values = c("Alunos com a característica" = cor_risco,
-                                "Alunos sem a característica" = "grey55")) +
-  scale_x_continuous(labels = eixo_pct, limits = c(0, NA), expand = expansion(mult = c(0, 0.03))) +
-  scale_y_discrete(labels = \(x) str_wrap(x, 28)) +
-  labs(x = "% abaixo do básico no teste", y = NULL, color = NULL)
-```
-
-```{r tab-verificacao, results = "asis"}
-for (d in c("LP", "MT")) {
-  cat("\n\n**", nome_disc[[d]], "**\n\n", sep = "")
-  verificacao %>%
-    filter(disciplina == d) %>%
-    transmute(Grupo = grupo,
-              `Razão de chances` = num(odds_ratio, 2),
-              `Alunos no teste` = alunos_grupo,
-              `Abaixo do básico` = abaixo_grupo,
-              `% no grupo (IC 95%)` = com_ic(abaixo_grupo, alunos_grupo),
-              `% nos demais` = num(100 * prop_demais, 1),
-              `% no grupo, treino` = num(100 * prop_grupo_treino, 1),
-              `Mesma direção` = if_else(mesma_direcao, "sim", "não")) %>%
-    knitr::kable(align = "lrrrrrrl") %>%
-    print()
-  cat("\n")
-}
-```
-
-```{r verificacao-contas}
-dir_ok <- verificacao %>% group_by(disciplina) %>% summarise(ok = sum(mesma_direcao), total = n())
-ok  <- function(d) dir_ok$ok[dir_ok$disciplina == d]
-tot <- function(d) dir_ok$total[dir_ok$disciplina == d]
-
-# Em quantas variáveis o intervalo do grupo no teste fica todo acima da proporção dos demais
-separa <- verificacao %>%
-  mutate(wilson(abaixo_grupo, alunos_grupo)) %>%
-  group_by(disciplina) %>%
-  summarise(n = sum(li > prop_demais))
-sep <- function(d) separa$n[separa$disciplina == d]
-```
-
-Em Matemática, as `r tot("MT")` variáveis vão na mesma direção do modelo. Em Língua Portuguesa, `r ok("LP")` de `r tot("LP")`. As diferenças não são pequenas: em `r sep("LP")` variáveis de LP e `r sep("MT")` de MT, o intervalo de confiança do grupo fica inteiro acima da proporção dos demais alunos, mesmo com um teste de apenas `r num(nrow(teste))` alunos.
-
-As duas exceções estão em LP. Entre os `r VT("sem_mae", "LP", "alunos_grupo")` alunos do teste que não moram com a mãe, `r VT("sem_mae", "LP", "abaixo_grupo")` estão abaixo do básico (`r pct(VT("sem_mae", "LP", "prop_grupo"))`), contra `r pct(VT("sem_mae", "LP", "prop_demais"))` dos demais. Entre os `r VT("deficiencia", "LP", "alunos_grupo")` que declaram deficiência, só `r VT("deficiencia", "LP", "abaixo_grupo")` está abaixo do básico (`r pct(VT("deficiencia", "LP", "prop_grupo"))`), contra `r pct(VT("deficiencia", "LP", "prop_demais"))`. São contagens muito pequenas: dois ou três alunos a mais em cada grupo já inverteriam a direção. Nos dois casos, o intervalo de confiança do grupo contém a proporção dos demais, e por isso o teste não permite afirmar que a direção é oposta à do modelo.
-
-Ainda assim, esses dois resultados merecem registro. No treino, os mesmos grupos tinham `r pct(VT("sem_mae", "LP", "prop_grupo_treino"))` e `r pct(VT("deficiencia", "LP", "prop_grupo_treino"))` abaixo do básico em LP, e os intervalos do teste não chegam a esses valores. Em 30 comparações, é esperado que uma ou duas se afastem do treino só por acaso, mas, das variáveis do modelo, essas são as duas em que a evidência do teste é mais fraca em LP. Em MT, os dois grupos vão na direção do modelo.
-
-## Calibração por número de fatores
-
-Para ver se as probabilidades previstas têm o tamanho certo, os alunos do teste foram agrupados pelo número de características do modelo que acumulam. Em cada grupo, comparamos a proporção observada de alunos abaixo do básico com a média das probabilidades previstas.
-
-```{r calibracao}
-calib <- map_dfr(c("LP", "MT"), \(d) calibracao(d) %>% mutate(disc = d)) %>%
-  mutate(disciplina = nome_disc[disc], wilson(round(observado * alunos), alunos))
-CAL <- function(d, f, coluna = "observado") pct(calib[[coluna]][calib$disc == d & calib$fatores == f])
-```
-
-```{r fig-calibracao, fig.height = 3.8}
-calib %>%
-  ggplot(aes(fatores, group = 1)) +
-  geom_linerange(aes(ymin = li, ymax = ls, color = disciplina), alpha = 0.3, linewidth = 3.2) +
-  geom_point(aes(y = observado, color = disciplina), size = 3) +
-  geom_line(aes(y = previsto), color = "grey35", linetype = "dashed") +
-  geom_point(aes(y = previsto), color = "grey35", shape = 4, size = 3, stroke = 1.1) +
-  facet_wrap(~ disciplina) +
-  scale_color_manual(values = cores) +
-  scale_y_continuous(labels = eixo_pct, limits = c(0, NA)) +
-  labs(x = "Número de fatores do modelo que o aluno acumula",
-       y = "% abaixo do básico no teste",
-       caption = "Ponto: proporção observada, com IC de 95%. X tracejado: probabilidade média prevista pelo modelo.") +
-  theme(legend.position = "none")
-```
-
-```{r tab-calibracao}
-calib %>%
-  transmute(disc, Fatores = fatores, Alunos = alunos,
-            obs = com_ic(round(observado * alunos), alunos), prev = num(100 * previsto, 1)) %>%
-  pivot_wider(names_from = disc, values_from = c(Alunos, obs, prev)) %>%
-  transmute(Fatores,
-            `Alunos LP` = Alunos_LP, `Observado LP, % (IC 95%)` = obs_LP, `Previsto LP, %` = prev_LP,
-            `Alunos MT` = Alunos_MT, `Observado MT, % (IC 95%)` = obs_MT, `Previsto MT, %` = prev_MT) %>%
-  knitr::kable(align = "lrrrrrr")
-```
-
-A proporção observada cresce com o número de fatores, de `r CAL("LP", "0")` para `r CAL("LP", "4 ou mais")` em LP e de `r CAL("MT", "0")` para `r CAL("MT", "4 ou mais")` em MT. Em todas as faixas a probabilidade prevista fica dentro do intervalo de confiança do observado. A sequência não é perfeitamente crescente: de dois para três fatores a proporção observada recua um pouco nas duas disciplinas (de `r CAL("LP", "2")` para `r CAL("LP", "3")` em LP), enquanto o modelo previa aumento. Com menos de 100 alunos na faixa de três fatores, a diferença cabe no intervalo.
-
-## AUC
-
-```{r auc}
-aucs <- map_dfr(c("LP", "MT"), \(d) {
-  m <- modelos[[d]]
-  r <- paste0("abaixo_", d)
-  tibble(disc = d,
-         treino = auc(treino[[r]], fitted(m$final)),
-         teste  = auc(teste[[r]], predict(m$final, teste, type = "response")))
-})
-A <- function(d, base) num(aucs[[base]][aucs$disc == d], 2)
-
-aucs %>%
-  transmute(Disciplina = nome_disc[disc], `AUC no treino` = num(treino, 3), `AUC no teste` = num(teste, 3)) %>%
-  knitr::kable(align = "lrr")
-```
-
-A AUC é a probabilidade de o modelo dar probabilidade prevista maior a um aluno abaixo do básico do que a um aluno acima, quando os dois são sorteados ao acaso. Vale 0,5 para um modelo que não distingue os alunos e 1 para um que os separa perfeitamente. No teste, a AUC é de `r A("LP", "teste")` em LP e `r A("MT", "teste")` em MT, pouco abaixo da do treino (`r A("LP", "treino")` e `r A("MT", "treino")`). A queda pequena indica que o modelo não está ajustado demais ao treino.
-
-Um valor em torno de 0,7 é uma separação moderada. O modelo ordena os alunos por risco melhor que o acaso, mas não serve para classificar um aluno individualmente: muitos alunos abaixo do básico não têm nenhum dos fatores. Dos `r sum(teste$abaixo_LP)` alunos do teste abaixo do básico em LP, `r sum(teste$abaixo_LP[rowSums(teste[modelos$LP$mantidas]) == 0])` não acumulam nenhum.
-
-# Comparação com as planilhas do professor
-
-```{r professor}
-prof <- map_dfr(c("LP", "MT"), \(d) {
-  read.csv(paste0("data/modelo/coeficientes_", d, ".csv")) %>% mutate(disc = d)
-})
-
-base_prof <- prof %>% filter(variavel == "const") %>% mutate(p = plogis(coeficiente))
-BP <- function(d) pct(base_prof$p[base_prof$disc == d])
-
-comp <- prof %>%
-  filter(variavel != "const") %>%
-  rename(variavel_professor = variavel, or_prof = odds_ratio,
-         li_prof = IC95_inferior_OR, ls_prof = IC95_superior_OR) %>%
-  left_join(correspondencia, by = "variavel_professor") %>%
-  left_join(select(finais, disc, nome, grupo, or_grupo = odds_ratio, li_grupo = ic_inf,
-                   ls_grupo = ic_sup, ep_grupo = erro_padrao), by = c("disc", "nome")) %>%
-  mutate(ep_prof = (log(ls_prof) - log(li_prof)) / (2 * 1.96),
-         dentro  = or_grupo >= li_prof & or_grupo <= ls_prof)
-
-pares <- filter(comp, !is.na(or_grupo))
-```
-
-As planilhas do professor trazem `r sum(comp$disc == "LP")` variáveis em LP e `r sum(comp$disc == "MT")` em MT, contra `r length(modelos$LP$mantidas)` e `r length(modelos$MT$mantidas)` no nosso modelo. Os nomes das variáveis dele não são os mesmos da seção 4 e não temos a definição de cada um. A correspondência usada aqui é uma hipótese nossa, feita pela ordem das variáveis dentro de cada bloco. Duas variáveis do bloco de nível socioeconômico ("Responsável sem ocupação indicada" e "Baixa escolaridade responsável 2") ficaram sem correspondência segura.
-
-```{r tab-professor, results = "asis"}
-for (d in c("LP", "MT")) {
-  cat("\n\n**", nome_disc[[d]], "**\n\n", sep = "")
-  comp %>%
-    filter(disc == d) %>%
-    transmute(`Variável na planilha do professor` = variavel_professor,
-              `Nosso grupo (hipótese)` = coalesce(grupo, "sem correspondência segura"),
-              `Razão de chances do professor (IC 95%)` = or_ic(or_prof, li_prof, ls_prof),
-              `Nossa razão de chances (IC 95%)` = or_ic(or_grupo, li_grupo, ls_grupo)) %>%
-    knitr::kable(align = "llrr") %>%
-    print()
-  cat("\n")
-}
-```
-
-```{r fig-professor, fig.height = 5.2}
-pares %>%
-  mutate(disciplina = nome_disc[disc]) %>%
-  pivot_longer(c(or_prof, or_grupo, li_prof, li_grupo, ls_prof, ls_grupo),
-               names_to = c(".value", "quem"), names_sep = "_") %>%
-  mutate(quem = if_else(quem == "prof", "Professor", "Grupo")) %>%
-  ggplot(aes(or, fct_reorder(grupo, or, .fun = mean), color = quem)) +
-  geom_vline(xintercept = 1, linetype = "dashed", color = "grey45") +
-  geom_pointrange(aes(xmin = li, xmax = ls), size = 0.4, linewidth = 0.8,
-                  position = position_dodge(width = 0.55)) +
-  facet_wrap(~ disciplina) +
-  scale_color_manual(values = c(Professor = "#8C9BAB", Grupo = "#1B7F5B")) +
-  scale_x_log10(breaks = c(1, 1.5, 2, 3), labels = \(x) num(x, 1)) +
-  scale_y_discrete(labels = \(x) str_wrap(x, 30)) +
-  labs(x = "Razão de chances e IC de 95%, escala logarítmica", y = NULL, color = NULL)
-```
-
-Os dois modelos chegam a resultados parecidos. Há `r nrow(pares)` comparações possíveis (`r sum(pares$disc == "LP")` em LP e `r sum(pares$disc == "MT")` em MT). Em todas, as razões de chances são maiores que 1 nos dois modelos, e a nossa estimativa cai dentro do intervalo de confiança do professor em `r sum(pares$dentro)` das `r nrow(pares)`. O aluno sem nenhum fator tem probabilidade de `r BP("LP")` em LP e `r BP("MT")` em MT no modelo dele, contra `r pct(base[["LP"]])` e `r pct(base[["MT"]])` no nosso. O abandono escolar sai do modelo de Matemática nos dois casos.
-
-As diferenças têm três origens prováveis.
-
-A primeira é a amostra. Os erros-padrão do professor são, na mediana, `r num(100 * (median(pares$ep_prof / pares$ep_grupo) - 1))`% maiores que os nossos, o que corresponde a uma amostra com cerca de `r num(100 / median(pares$ep_prof / pares$ep_grupo)^2)`% do tamanho do nosso treino. Ele provavelmente estimou o modelo com uma parte dos alunos, e duas amostras diferentes dão estimativas diferentes dentro do que os intervalos indicam.
-
-A segunda é o conjunto de variáveis. O nosso modelo tem a escola rural nas duas disciplinas e, em MT, a relação com os professores e o transtorno do espectro autista, que não aparecem na planilha dele. Como as variáveis são relacionadas, incluir ou tirar uma muda um pouco a razão de chances das outras.
-
-A terceira é a própria correspondência. Onde ela estiver errada, estamos comparando variáveis diferentes. As maiores distâncias estão na idade (`r num(comp$or_prof[comp$disc == "LP" & comp$nome %in% "idade_12"], 2)` dele contra `r OR("idade_12")` nosso em LP, e `r num(comp$or_prof[comp$disc == "MT" & comp$nome %in% "idade_12"], 2)` contra `r OR("idade_12", "MT")` em MT) e no indicador de inclusão em LP (`r num(comp$or_prof[comp$disc == "LP" & comp$nome %in% "deficiencia"], 2)` contra `r OR("deficiencia")`). Nesse último, a variável dele pode ser a deficiência, o transtorno do espectro autista ou uma combinação dos dois. Em MT, a razão dele (`r num(comp$or_prof[comp$disc == "MT" & comp$nome %in% "deficiencia"], 2)`) fica entre a nossa da deficiência (`r OR("deficiencia", "MT")`) e a do transtorno do espectro autista (`r OR("tea", "MT")`). As duas variáveis sem correspondência segura têm razões de `r num(comp$or_prof[comp$disc == "LP" & is.na(comp$nome)][1], 2)` e `r num(comp$or_prof[comp$disc == "LP" & is.na(comp$nome)][2], 2)` em LP. As candidatas mais prováveis no nosso modelo são não morar com a mãe (`r OR("sem_mae")`) e não ter Wi-Fi em casa (`r OR("sem_wifi")`), que ocupam as mesmas posições no bloco.
+O modelo supõe que as razões se multiplicam sem interação entre as variáveis. É uma simplificação, que ainda precisa ser conferida em dados que não foram usados na estimação.
 
 # Conclusões
 
@@ -426,20 +214,24 @@ A regressão logística confirma, com as características consideradas em conjun
 
 A trajetória escolar e o nível socioeconômico têm as razões de chances mais altas e mais estáveis entre as disciplinas: reprovação, idade de 12 anos ou mais, entrada tardia na escola e INSE nos níveis I e II. Em Língua Portuguesa, pesam mais a rotina (trabalhar fora de casa, não ter tempo de lazer) e a percepção de que os professores não acreditam no aluno. Em Matemática, pesam mais o INSE e o transtorno do espectro autista. A escolaridade da mãe e a iluminação da rua deixam de ser significativas quando as outras variáveis estão no modelo.
 
-A base de teste vai na mesma direção do modelo em `r ok("MT")` de `r tot("MT")` variáveis em Matemática e em `r ok("LP")` de `r tot("LP")` em Língua Portuguesa. As duas exceções envolvem `r VT("sem_mae", "LP", "abaixo_grupo")` e `r VT("deficiencia", "LP", "abaixo_grupo")` alunos abaixo do básico e não permitem concluir que a direção é contrária. As probabilidades previstas acompanham as proporções observadas, e a AUC de `r A("LP", "teste")` em LP e `r A("MT", "teste")` em MT indica uma separação moderada.
+Para a SME, o resultado útil é o acúmulo. Um aluno sem nenhum dos fatores tem cerca de `r num(100 * base[["LP"]])`% de probabilidade de estar abaixo do básico em LP e `r num(100 * base[["MT"]])`% em MT, e cada fator acrescentado multiplica a chance. Boa parte desses fatores, como reprovação, idade e abandono, já está nos registros da escola.
 
-Para a SME, o resultado útil é o acúmulo. Um aluno sem nenhum dos fatores tem cerca de `r num(100 * base[["LP"]])`% de probabilidade de estar abaixo do básico em LP e `r num(100 * base[["MT"]])`% em MT. No teste, entre os alunos com quatro fatores ou mais, a proporção observada foi de `r CAL("LP", "4 ou mais")` em LP e `r CAL("MT", "4 ou mais")` em MT. Boa parte desses fatores, como reprovação, idade e abandono, já está nos registros da escola.
+Esses resultados vêm só da base de treino. Ainda falta conferir em dados que o modelo não viu se as associações se repetem.
 
 # Limitações
 
 As razões de chances medem associação, não causa. O modelo não permite dizer que acabar com a reprovação ou asfaltar a rua reduziria a proporção de alunos abaixo do básico.
 
-A seleção de variáveis foi feita em uma única rodada pelo valor-p, seguindo o procedimento do professor. Variáveis próximas do corte, como o abandono em LP, poderiam entrar ou sair com outra amostra, e a seleção pelo valor-p tende a deixar os coeficientes das variáveis mantidas um pouco maiores do que seriam. A verificação no teste existe para controlar esse efeito.
-
-A base de teste tem `r num(nrow(teste))` alunos, e vários grupos têm menos de 50. As proporções desses grupos têm intervalos largos, e a verificação da direção é fraca para eles, tanto quando concorda com o modelo quanto quando discorda.
+A seleção de variáveis foi feita em uma única rodada pelo valor-p, seguindo o procedimento do professor. Variáveis próximas do corte, como o abandono em LP, poderiam entrar ou sair com outra amostra, e a seleção pelo valor-p tende a deixar os coeficientes das variáveis mantidas um pouco maiores do que seriam.
 
 O modelo não tem interações e trata cada característica como presente ou ausente. Variáveis com gradiente, como o INSE e a idade, perdem informação ao serem cortadas em dois grupos.
 
 Continuam valendo as limitações do relatório descritivo: a base só inclui alunos que responderam a todo o questionário, o que subestima a proporção abaixo do básico, e as características vêm das respostas de crianças de cerca de 10 anos.
 
-Por fim, a comparação com o professor depende de uma correspondência de nomes que é hipótese nossa e de uma amostra dele que não conseguimos reproduzir.
+# Próximas etapas
+
+Para discutir com o professor:
+
+1. como usar a base de teste (1.006 alunos) para verificar o modelo;
+2. a comparação com as planilhas de coeficientes que ele enviou;
+3. as etapas seguintes do trabalho.
