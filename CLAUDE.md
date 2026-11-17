@@ -123,8 +123,9 @@ Saídas em `data/modelo/`: `modelo_grupo_LP.csv`, `modelo_grupo_MT.csv`,
   Motivo: no RStudio do Henrique, rodar o script por seleção (Ctrl+Enter)
   quebrava no `tribble` com "unexpected symbol", porque o texto acentuado
   chegava ao R em outra codificação. Manter assim ao editar o script.
-- 16/11/2026: o patch da sessão anterior foi aplicado na branch
-  `modelo-logistico` (já no GitHub). O trabalho do modelo segue nessa branch.
+- 17/11/2026 (Henrique): o trabalho é feito direto no `main`, só com commits,
+  sem branches nem pull requests. A branch `modelo-logistico` já foi
+  incorporada ao `main`.
 
 ## Próximos passos
 
