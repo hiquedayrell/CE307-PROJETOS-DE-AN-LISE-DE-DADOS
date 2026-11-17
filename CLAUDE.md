@@ -117,6 +117,12 @@ Saídas em `data/modelo/`: `modelo_grupo_LP.csv`, `modelo_grupo_MT.csv`,
 - 16/11/2026: o `R/08` grava os CSVs de `data/modelo/` com 10 algarismos
   significativos (função `grava`). Antes, os últimos dígitos mudavam de uma
   máquina para outra e o git acusava diferença a cada execução.
+- 17/11/2026: o `R/08` tem só caracteres ASCII. Os rótulos acentuados ficam
+  como códigos Unicode (barra invertida + u + 4 dígitos, por exemplo u00e3 para
+  "ã") e os comentários, sem acento. O relatório sai com os acentos normais.
+  Motivo: no RStudio do Henrique, rodar o script por seleção (Ctrl+Enter)
+  quebrava no `tribble` com "unexpected symbol", porque o texto acentuado
+  chegava ao R em outra codificação. Manter assim ao editar o script.
 - 16/11/2026: o patch da sessão anterior foi aplicado na branch
   `modelo-logistico` (já no GitHub). O trabalho do modelo segue nessa branch.
 

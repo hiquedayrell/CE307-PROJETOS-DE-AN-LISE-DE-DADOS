@@ -1,20 +1,20 @@
 # =====================================================================
-# 08 Modelo logístico.R
-# Projeto: Eixo 4 — Educação Básica Municipal (parceria SME Curitiba)
+# 08 Modelo logistico.R
+# Projeto: Eixo 4 - Educacao Basica Municipal (parceria SME Curitiba)
 #
 # Objetivo:
-#   1. estimar, na base de TREINO, uma regressão logística para cada
-#      resposta (abaixo_LP e abaixo_MT) com as 18 variáveis dicotômicas
-#      da seção 4 do relatório descritivo revisado;
-#   2. manter só as variáveis significativas (p < 0,05) e reestimar;
-#   3. interpretar cada variável pela razão de chances (odds ratio);
-#   4. verificar na base de TESTE se os dados vão na mesma direção do
-#      modelo (proporções condicionais), a calibração e a AUC;
+#   1. estimar, na base de TREINO, uma regressao logistica para cada
+#      resposta (abaixo_LP e abaixo_MT) com as 18 variaveis dicotomicas
+#      da secao 4 do relatorio descritivo revisado;
+#   2. manter so as variaveis significativas (p < 0,05) e reestimar;
+#   3. interpretar cada variavel pela razao de chances (odds ratio);
+#   4. verificar na base de TESTE se os dados vao na mesma direcao do
+#      modelo (proporcoes condicionais), a calibracao e a AUC;
 #   5. comparar com os coeficientes enviados pelo professor.
 #
 # Entradas: data/treino.csv, data/teste.csv,
 #           data/modelo/coeficientes_LP.csv e coeficientes_MT.csv (professor)
-# Saídas:   data/modelo/modelo_grupo_LP.csv e modelo_grupo_MT.csv
+# Saidas:   data/modelo/modelo_grupo_LP.csv e modelo_grupo_MT.csv
 #           data/modelo/verificacao_teste.csv
 # =====================================================================
 
@@ -25,30 +25,30 @@ teste  <- read.csv("data/teste.csv")
 
 
 # ---------------------------------------------------------------------
-# 1. As 18 variáveis dicotômicas da seção 4
+# 1. As 18 variaveis dicotomicas da secao 4
 # ---------------------------------------------------------------------
-# Cada variável vale 1 se o aluno está no grupo descrito e 0 caso contrário.
+# Cada variavel vale 1 se o aluno esta no grupo descrito e 0 caso contrario.
 
 grupos <- tribble(
   ~nome,            ~bloco,                 ~grupo,                                        ~variavel,            ~cods,
-  "reprovou",       "Trajetória escolar",   "Já reprovou ao menos uma vez",                "TX_RESP_Q19",        "B,C",
-  "idade_12",       "Trajetória escolar",   "Tem 12 anos ou mais",                         "TX_RESP_Q02",        "D,E,F",
-  "abandonou",      "Trajetória escolar",   "Já abandonou a escola",                       "TX_RESP_Q20",        "B,C",
-  "entrada_8",      "Trajetória escolar",   "Entrou na escola com 8 anos ou mais",         "TX_RESP_Q17",        "D",
-  "inse_baixo",     "Nível socioeconômico", "INSE nos níveis I e II",                      "NU_TIPO_NIVEL_INSE", "1,2",
-  "mae_5ano",       "Nível socioeconômico", "Mãe estudou até o 5º ano",                    "TX_RESP_Q08",        "A,B",
-  "sem_mae",        "Nível socioeconômico", "Não mora com a mãe",                          "TX_RESP_Q07a",       "A",
-  "sem_wifi",       "Nível socioeconômico", "Sem Wi-Fi em casa",                           "TX_RESP_Q13b",       "A",
-  "sem_asfalto",    "Entorno",              "Rua sem asfalto ou calçamento",               "TX_RESP_Q11a",       "A",
-  "sem_iluminacao", "Entorno",              "Rua sem iluminação",                          "TX_RESP_Q11c",       "A",
+  "reprovou",       "Trajet\u00f3ria escolar",   "J\u00e1 reprovou ao menos uma vez",                "TX_RESP_Q19",        "B,C",
+  "idade_12",       "Trajet\u00f3ria escolar",   "Tem 12 anos ou mais",                         "TX_RESP_Q02",        "D,E,F",
+  "abandonou",      "Trajet\u00f3ria escolar",   "J\u00e1 abandonou a escola",                       "TX_RESP_Q20",        "B,C",
+  "entrada_8",      "Trajet\u00f3ria escolar",   "Entrou na escola com 8 anos ou mais",         "TX_RESP_Q17",        "D",
+  "inse_baixo",     "N\u00edvel socioecon\u00f4mico", "INSE nos n\u00edveis I e II",                      "NU_TIPO_NIVEL_INSE", "1,2",
+  "mae_5ano",       "N\u00edvel socioecon\u00f4mico", "M\u00e3e estudou at\u00e9 o 5\u00ba ano",                    "TX_RESP_Q08",        "A,B",
+  "sem_mae",        "N\u00edvel socioecon\u00f4mico", "N\u00e3o mora com a m\u00e3e",                          "TX_RESP_Q07a",       "A",
+  "sem_wifi",       "N\u00edvel socioecon\u00f4mico", "Sem Wi-Fi em casa",                           "TX_RESP_Q13b",       "A",
+  "sem_asfalto",    "Entorno",              "Rua sem asfalto ou cal\u00e7amento",               "TX_RESP_Q11a",       "A",
+  "sem_iluminacao", "Entorno",              "Rua sem ilumina\u00e7\u00e3o",                          "TX_RESP_Q11c",       "A",
   "rural",          "Entorno",              "Escola rural",                                "ID_LOCALIZACAO",     "2",
   "trabalha_fora",  "Rotina",               "Trabalha fora de casa",                       "TX_RESP_Q21d",       "B,C,D",
-  "sem_lazer",      "Rotina",               "Não tem tempo de lazer",                      "TX_RESP_Q21e",       "A",
-  "nao_estuda",     "Rotina",               "Não estuda fora da escola",                   "TX_RESP_Q21a",       "A",
-  "prof_nao_acred", "Relação com a escola", "Discorda que os professores acreditam nele",  "TX_RESP_Q23h",       "C,D",
-  "deficiencia",    "Inclusão",             "Declara deficiência",                         "TX_RESP_Q05a",       "B",
-  "tea",            "Inclusão",             "Declara transtorno do espectro autista",      "TX_RESP_Q05b",       "B",
-  "pouco_incentivo","Família",              "Pouco incentivo para ir às aulas",            "TX_RESP_Q10e",       "A,B"
+  "sem_lazer",      "Rotina",               "N\u00e3o tem tempo de lazer",                      "TX_RESP_Q21e",       "A",
+  "nao_estuda",     "Rotina",               "N\u00e3o estuda fora da escola",                   "TX_RESP_Q21a",       "A",
+  "prof_nao_acred", "Rela\u00e7\u00e3o com a escola", "Discorda que os professores acreditam nele",  "TX_RESP_Q23h",       "C,D",
+  "deficiencia",    "Inclus\u00e3o",             "Declara defici\u00eancia",                         "TX_RESP_Q05a",       "B",
+  "tea",            "Inclus\u00e3o",             "Declara transtorno do espectro autista",      "TX_RESP_Q05b",       "B",
+  "pouco_incentivo","Fam\u00edlia",              "Pouco incentivo para ir \u00e0s aulas",            "TX_RESP_Q10e",       "A,B"
 )
 
 # Cria as 18 colunas 0/1 em uma base
@@ -65,14 +65,14 @@ teste  <- cria_dicotomicas(teste)
 
 
 # ---------------------------------------------------------------------
-# 2. Estimação: modelo completo -> seleção (p < 0,05) -> modelo final
+# 2. Estimacao: modelo completo -> selecao (p < 0,05) -> modelo final
 # ---------------------------------------------------------------------
 
 ajusta <- function(resposta, variaveis) {
   glm(reformulate(variaveis, resposta), data = treino, family = binomial)
 }
 
-# Tabela de coeficientes com razão de chances e IC de 95% (Wald, como no statsmodels)
+# Tabela de coeficientes com razao de chances e IC de 95% (Wald, como no statsmodels)
 tabela_modelo <- function(modelo) {
   coefs <- summary(modelo)$coefficients
   tibble(
@@ -97,7 +97,7 @@ estima <- function(resposta) {
 
 modelos <- list(LP = estima("abaixo_LP"), MT = estima("abaixo_MT"))
 
-# Variáveis que saíram em cada modelo (não significativas junto com as demais)
+# Variaveis que sairam em cada modelo (nao significativas junto com as demais)
 modelos$LP$removidas
 modelos$MT$removidas
 
@@ -111,8 +111,8 @@ coeficientes <- map(modelos, \(m) {
 coeficientes$LP %>% mutate(across(where(is.numeric), \(x) round(x, 3))) %>% print(n = Inf, width = Inf)
 coeficientes$MT %>% mutate(across(where(is.numeric), \(x) round(x, 3))) %>% print(n = Inf, width = Inf)
 
-# Grava com 10 algarismos significativos: os últimos dígitos mudam de uma
-# máquina para outra e fariam o git acusar diferença a cada execução.
+# Grava com 10 algarismos significativos: os ultimos digitos mudam de uma
+# maquina para outra e fariam o git acusar diferenca a cada execucao.
 grava <- function(tabela, arquivo) {
   tabela %>%
     mutate(across(where(is.double), \(x) signif(x, 10))) %>%
@@ -124,19 +124,19 @@ grava(coeficientes$MT, "data/modelo/modelo_grupo_MT.csv")
 
 
 # ---------------------------------------------------------------------
-# 3. Interpretação
+# 3. Interpretacao
 # ---------------------------------------------------------------------
-# Intercepto: chance de estar abaixo do básico de um aluno SEM nenhuma
-# das características do modelo. plogis() transforma em probabilidade.
+# Intercepto: chance de estar abaixo do basico de um aluno SEM nenhuma
+# das caracteristicas do modelo. plogis() transforma em probabilidade.
 #
-# Razão de chances (OR) de uma variável: por quanto a CHANCE (p / (1 - p))
-# é multiplicada quando o aluno tem a característica, mantendo as outras
-# iguais. OR = 1,85 significa chance 85% maior. Não é "85% mais provável":
-# chance e probabilidade só são parecidas quando o evento é raro.
+# Razao de chances (OR) de uma variavel: por quanto a CHANCE (p / (1 - p))
+# e multiplicada quando o aluno tem a caracteristica, mantendo as outras
+# iguais. OR = 1,85 significa chance 85% maior. Nao e "85% mais provavel":
+# chance e probabilidade so sao parecidas quando o evento e raro.
 
 map_dbl(modelos, \(m) plogis(coef(m$final)[["(Intercept)"]]))   # probabilidade base
 
-# Exemplo: aluno sem nenhum fator x aluno que só reprovou x reprovou e trabalha fora
+# Exemplo: aluno sem nenhum fator x aluno que so reprovou x reprovou e trabalha fora
 exemplo <- function(m, ...) {
   perfil <- as_tibble(setNames(as.list(rep(0, length(m$mantidas))), m$mantidas))
   for (v in c(...)) perfil[[v]] <- 1
@@ -148,12 +148,12 @@ exemplo(modelos$LP, "reprovou", "trabalha_fora")
 
 
 # ---------------------------------------------------------------------
-# 4. Verificação na base de teste
+# 4. Verificacao na base de teste
 # ---------------------------------------------------------------------
 
-## 4.1 Proporções condicionais --------------------------------------------
-# Para cada variável do modelo: P(abaixo | tem a característica) contra
-# P(abaixo | não tem). Se OR > 1, esperamos a primeira maior que a segunda.
+## 4.1 Proporcoes condicionais --------------------------------------------
+# Para cada variavel do modelo: P(abaixo | tem a caracteristica) contra
+# P(abaixo | nao tem). Se OR > 1, esperamos a primeira maior que a segunda.
 
 verifica <- function(disc) {
   m        <- modelos[[disc]]
@@ -187,9 +187,9 @@ verificacao %>% filter(!mesma_direcao)   # onde o teste discorda do modelo
 grava(verificacao, "data/modelo/verificacao_teste.csv")
 
 
-## 4.2 Calibração por número de fatores -----------------------------------
-# Agrupa os alunos do teste pelo número de fatores do modelo que acumulam
-# e compara a proporção observada com a probabilidade média prevista.
+## 4.2 Calibracao por numero de fatores -----------------------------------
+# Agrupa os alunos do teste pelo numero de fatores do modelo que acumulam
+# e compara a proporcao observada com a probabilidade media prevista.
 
 calibracao <- function(disc) {
   m <- modelos[[disc]]
@@ -209,7 +209,7 @@ calibracao("MT")
 
 ## 4.3 AUC -----------------------------------------------------------------
 # Probabilidade de o modelo dar nota de risco maior a um aluno abaixo do
-# básico do que a um aluno acima, sorteados ao acaso (0,5 = acaso; 1 = perfeito).
+# basico do que a um aluno acima, sorteados ao acaso (0,5 = acaso; 1 = perfeito).
 
 auc <- function(resposta, previsto) {
   postos <- rank(previsto)
@@ -227,28 +227,28 @@ map_dfr(c("LP", "MT"), \(disc) {
 
 
 # ---------------------------------------------------------------------
-# 5. Comparação com os coeficientes do professor
+# 5. Comparacao com os coeficientes do professor
 # ---------------------------------------------------------------------
-# Os nomes do professor não têm definição no repositório. A correspondência
-# abaixo é uma HIPÓTESE do grupo (mesma ordem do tribble dentro de cada
-# bloco); onde não há correspondência clara, fica NA.
+# Os nomes do professor nao tem definicao no repositorio. A correspondencia
+# abaixo e uma HIPOTESE do grupo (mesma ordem do tribble dentro de cada
+# bloco); onde nao ha correspondencia clara, fica NA.
 
 correspondencia <- tribble(
   ~variavel_professor,                                         ~nome,
-  "Trajetória escolar - Repetiu ano",                          "reprovou",
-  "Trajetória escolar - Atraso escolar",                       "idade_12",
-  "Trajetória escolar - Abandono ou interrupção",              "abandonou",
-  "Trajetória escolar - Entrada tardia",                       "entrada_8",
-  "Nível socioeconômico - INSE baixo",                         "inse_baixo",
-  "Nível socioeconômico - Responsável sem ocupação indicada",  NA,
-  "Nível socioeconômico - Baixa escolaridade responsável 2",   NA,
-  "Entorno - Entorno desfavorável 1",                          "sem_asfalto",
-  "Rotina - Rotina doméstica desfavorável",                    "trabalha_fora",
-  "Rotina - Trabalho doméstico",                               "sem_lazer",
-  "Rotina - Rotina pessoal desfavorável",                      "nao_estuda",
-  "Relação com a escola - Relação desfavorável com a escola",  "prof_nao_acred",
-  "Inclusão - Indicador de inclusão 1",                        "deficiencia",
-  "Família - Indicador familiar",                              "pouco_incentivo"
+  "Trajet\u00f3ria escolar - Repetiu ano",                          "reprovou",
+  "Trajet\u00f3ria escolar - Atraso escolar",                       "idade_12",
+  "Trajet\u00f3ria escolar - Abandono ou interrup\u00e7\u00e3o",              "abandonou",
+  "Trajet\u00f3ria escolar - Entrada tardia",                       "entrada_8",
+  "N\u00edvel socioecon\u00f4mico - INSE baixo",                         "inse_baixo",
+  "N\u00edvel socioecon\u00f4mico - Respons\u00e1vel sem ocupa\u00e7\u00e3o indicada",  NA,
+  "N\u00edvel socioecon\u00f4mico - Baixa escolaridade respons\u00e1vel 2",   NA,
+  "Entorno - Entorno desfavor\u00e1vel 1",                          "sem_asfalto",
+  "Rotina - Rotina dom\u00e9stica desfavor\u00e1vel",                    "trabalha_fora",
+  "Rotina - Trabalho dom\u00e9stico",                               "sem_lazer",
+  "Rotina - Rotina pessoal desfavor\u00e1vel",                      "nao_estuda",
+  "Rela\u00e7\u00e3o com a escola - Rela\u00e7\u00e3o desfavor\u00e1vel com a escola",  "prof_nao_acred",
+  "Inclus\u00e3o - Indicador de inclus\u00e3o 1",                        "deficiencia",
+  "Fam\u00edlia - Indicador familiar",                              "pouco_incentivo"
 )
 
 compara_professor <- function(disc) {
