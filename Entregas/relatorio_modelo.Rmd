@@ -58,6 +58,16 @@ completos <- map_dfr(modelos, \(m) tabela_modelo(m$completo), .id = "disc") %>%
   filter(nome != "(Intercept)")
 ORC <- function(v, disc = "LP") num(completos$odds_ratio[completos$nome == v & completos$disc == disc], 2)
 PC  <- function(v, disc = "LP") p_fmt(completos$p_valor[completos$nome == v & completos$disc == disc])
+
+# Resultados da base de teste (seção 4 do R/08)
+condicionadas <- filter(prob_cond, nome != "todos")
+todos_teste   <- filter(prob_cond, nome == "todos")
+PC_T <- function(v, disc, tem, col) condicionadas[[col]][condicionadas$nome == v & condicionadas$disciplina == disc & condicionadas$tem == tem]
+FX   <- function(disc, f, col) perfis[[col]][perfis$disciplina == disc & perfis$fatores == f]
+CL   <- function(disc, nivel, col) classificacao[[col]][classificacao$disciplina == disc & classificacao$nivel == nivel]
+TT   <- function(disc, col) todos_teste[[col]][todos_teste$disciplina == disc]
+n_dentro <- sum(condicionadas$previsto_no_ic)
+n_grupos <- nrow(condicionadas)
 ```
 
 # Introdução
@@ -69,13 +79,13 @@ Este relatório traz a etapa de modelagem, que responde a essa pergunta com uma 
 1. interpretar cada variável pela razão de chances;
 2. verificar na base de teste, agrupando os alunos pela característica e calculando proporções condicionais, se os dados vão na mesma direção do modelo.
 
-Reproduzimos o procedimento do professor com a nossa base de treino e fizemos a primeira tarefa, a interpretação, com o modelo estimado por nós. A verificação na base de teste e a comparação com as planilhas do professor ficam para depois de discutirmos com ele como usar a base de teste.
+Reproduzimos o procedimento do professor com a nossa base de treino e fizemos as duas tarefas com o modelo estimado por nós. A forma de usar a base de teste foi discutida com o professor em reunião: comparar, em probabilidades condicionais, o que o modelo prevê com o que se vê nos alunos que ele não usou. Ao final, mostramos uma aplicação do modelo: dadas as características de um aluno, estimar a probabilidade de ele estar abaixo do básico e se ele está entre os de maior risco.
 
 # Dados e metodologia
 
 ## Bases
 
-As bases são as mesmas do relatório descritivo: amostra do Saeb 2023 com 10.068 alunos do 5º ano, dividida em treino (`r num(nrow(treino))` alunos) e teste (1.006 alunos), com sorteio estratificado pelas duas variáveis resposta. O modelo foi estimado só com o treino. A base de teste ainda não foi usada.
+As bases são as mesmas do relatório descritivo: amostra do Saeb 2023 com 10.068 alunos do 5º ano, dividida em treino (`r num(nrow(treino))` alunos) e teste (1.006 alunos), com sorteio estratificado pelas duas variáveis resposta. O modelo foi estimado só com o treino. A base de teste não participou de nenhuma escolha e foi usada apenas na verificação.
 
 As variáveis resposta são `abaixo_LP` (proficiência em Língua Portuguesa até 150) e `abaixo_MT` (proficiência em Matemática até 175). No treino, `r pct(mean(treino$abaixo_LP))` dos alunos estão abaixo do básico em LP e `r pct(mean(treino$abaixo_MT))` em MT.
 
@@ -190,7 +200,7 @@ O intercepto do modelo dá a chance de um aluno que não tem nenhuma das caracte
 Uma razão de chances de `r OR("reprovou")` não significa que o aluno que reprovou tem `r OR("reprovou")` vezes a probabilidade de estar abaixo do básico. A razão multiplica a chance, $p/(1-p)$, e as duas contas só dão resultados parecidos quando a probabilidade é pequena. A tabela mostra a probabilidade prevista pelo modelo para alguns perfis, mantendo em zero as demais características.
 
 ```{r tab-perfis}
-perfis <- list(
+perfis_ex <- list(
   "Nenhum fator"                                   = character(0),
   "Só reprovou"                                    = "reprovou",
   "Reprovou e tem 12 anos ou mais"                 = c("reprovou", "idade_12"),
@@ -198,15 +208,165 @@ perfis <- list(
   "Os três anteriores e rua sem asfalto"           = c("reprovou", "idade_12", "inse_baixo", "sem_asfalto")
 )
 
-tibble(Perfil = names(perfis),
-       `Probabilidade prevista LP` = map_chr(perfis, \(v) PR("LP", v)),
-       `Probabilidade prevista MT` = map_chr(perfis, \(v) PR("MT", v))) %>%
+tibble(Perfil = names(perfis_ex),
+       `Probabilidade prevista LP` = map_chr(perfis_ex, \(v) PR("LP", v)),
+       `Probabilidade prevista MT` = map_chr(perfis_ex, \(v) PR("MT", v))) %>%
   knitr::kable(align = "lrr")
 ```
 
-Em LP, o aluno que só reprovou passa de `r PR("LP")` para `r PR("LP", "reprovou")`. A chance foi multiplicada por `r OR("reprovou")` e a probabilidade, por `r num(unname(exemplo(modelos$LP, "reprovou")) / base[["LP"]], 2)`, valores ainda próximos. Quando os fatores se acumulam, as razões se multiplicam: reprovar e ter 12 anos ou mais multiplica a chance por `r OR("reprovou")` × `r OR("idade_12")` = `r num(prod(finais$odds_ratio[finais$disc == "LP" & finais$nome %in% c("reprovou", "idade_12")]), 2)`. No perfil com quatro fatores, a probabilidade prevista em MT chega a `r PR("MT", perfis[[5]])`, cerca de `r num(unname(exemplo(modelos$MT, perfis[[5]])) / base[["MT"]])` vezes a do aluno sem nenhum fator, enquanto a chance é `r num(prod(finais$odds_ratio[finais$disc == "MT" & finais$nome %in% perfis[[5]]]))` vezes maior.
+Em LP, o aluno que só reprovou passa de `r PR("LP")` para `r PR("LP", "reprovou")`. A chance foi multiplicada por `r OR("reprovou")` e a probabilidade, por `r num(unname(exemplo(modelos$LP, "reprovou")) / base[["LP"]], 2)`, valores ainda próximos. Quando os fatores se acumulam, as razões se multiplicam: reprovar e ter 12 anos ou mais multiplica a chance por `r OR("reprovou")` × `r OR("idade_12")` = `r num(prod(finais$odds_ratio[finais$disc == "LP" & finais$nome %in% c("reprovou", "idade_12")]), 2)`. No perfil com quatro fatores, a probabilidade prevista em MT chega a `r PR("MT", perfis_ex[[5]])`, cerca de `r num(unname(exemplo(modelos$MT, perfis_ex[[5]])) / base[["MT"]])` vezes a do aluno sem nenhum fator, enquanto a chance é `r num(prod(finais$odds_ratio[finais$disc == "MT" & finais$nome %in% perfis_ex[[5]]]))` vezes maior.
 
-O modelo supõe que as razões se multiplicam sem interação entre as variáveis. É uma simplificação, que ainda precisa ser conferida em dados que não foram usados na estimação.
+O modelo supõe que as razões se multiplicam sem interação entre as variáveis. É uma simplificação, conferida na base de teste na seção seguinte.
+
+# Verificação na base de teste
+
+O modelo foi estimado com a base de treino. Para saber se o que ele diz vale para alunos que ele não viu, aplicamos o mesmo modelo, sem reestimar nada, aos `r num(nrow(teste))` alunos da base de teste. Cada aluno recebe a probabilidade prevista a partir das suas características. Depois comparamos dois números em cada grupo de alunos:
+
+- **previsto**: a média das probabilidades que o modelo dá aos alunos do grupo;
+- **observado**: a proporção desses alunos que está de fato abaixo do básico, ou seja, a probabilidade condicional P(abaixo do básico | grupo), com intervalo de confiança de 95% (Wilson).
+
+Se o previsto cai dentro do intervalo do observado, a interpretação do modelo se confirma em dados novos.
+
+Sem condicionar a nada, os dois números saem praticamente iguais por construção: no teste, o modelo prevê em média `r pct(TT("LP", "previsto"))` em LP e `r pct(TT("MT", "previsto"))` em MT, e as proporções observadas são `r pct(TT("LP", "observado"))` e `r pct(TT("MT", "observado"))`. Essa comparação não testa o modelo. O teste está em condicionar: olhar grupos específicos de alunos.
+
+## Por característica
+
+```{r fig-condicionais, fig.height = 7.4}
+condicionadas %>%
+  filter(tem) %>%
+  mutate(disciplina = nome_disc[disciplina],
+         rotulo = paste0(grupo, " (n = ", alunos, ")")) %>%
+  ggplot(aes(y = fct_reorder(rotulo, previsto))) +
+  geom_linerange(aes(xmin = ic_inf, xmax = ic_sup), color = "grey75", linewidth = 3.2) +
+  geom_point(aes(x = observado, shape = "Observado no teste (IC 95%)"), color = "grey25", size = 2.6) +
+  geom_point(aes(x = previsto, shape = "Previsto pelo modelo", color = disciplina), size = 3.2, stroke = 1.3) +
+  facet_wrap(~ disciplina, scales = "free_y") +
+  scale_color_manual(values = cores, guide = "none") +
+  scale_shape_manual(values = c("Observado no teste (IC 95%)" = 16, "Previsto pelo modelo" = 4)) +
+  scale_x_continuous(labels = eixo_pct, limits = c(0, NA), expand = expansion(mult = c(0, 0.03))) +
+  scale_y_discrete(labels = \(x) str_wrap(x, 28)) +
+  labs(x = "% abaixo do básico entre os alunos do teste que têm a característica", y = NULL, shape = NULL)
+```
+
+Cada linha é o grupo de alunos do teste que tem a característica. A faixa cinza é o intervalo de confiança da proporção observada, e o X é o que o modelo prevê para esse mesmo grupo.
+
+Em `r n_dentro` dos `r n_grupos` grupos (as características de cada modelo, para quem tem e para quem não tem, nas duas disciplinas), o previsto cai dentro do intervalo do observado. Entre os `r PC_T("reprovou", "LP", TRUE, "alunos")` alunos do teste que já reprovaram, por exemplo, o modelo prevê `r pct(PC_T("reprovou", "LP", TRUE, "previsto"))` em LP e foram observados `r pct(PC_T("reprovou", "LP", TRUE, "observado"))`. Para o INSE nos níveis I e II, `r pct(PC_T("inse_baixo", "LP", TRUE, "previsto"))` previstos e `r pct(PC_T("inse_baixo", "LP", TRUE, "observado"))` observados em LP, e `r pct(PC_T("inse_baixo", "MT", TRUE, "previsto"))` e `r pct(PC_T("inse_baixo", "MT", TRUE, "observado"))` em MT.
+
+A única exceção é não morar com a mãe, em LP. O modelo prevê `r pct(PC_T("sem_mae", "LP", TRUE, "previsto"))`, e no teste só `r PC_T("sem_mae", "LP", TRUE, "abaixo")` dos `r PC_T("sem_mae", "LP", TRUE, "alunos")` alunos estão abaixo do básico (`r pct(PC_T("sem_mae", "LP", TRUE, "observado"))`). Em MT, o mesmo grupo bate com o modelo (`r pct(PC_T("sem_mae", "MT", TRUE, "previsto"))` previstos e `r pct(PC_T("sem_mae", "MT", TRUE, "observado"))` observados). Com `r PC_T("sem_mae", "LP", TRUE, "alunos")` alunos, não dá para saber se é acaso da amostra ou se a associação em LP é mais fraca do que o treino indicou.
+
+Os grupos pequenos pedem cuidado, porque o intervalo é tão largo que quase qualquer previsão cabe nele. A deficiência em LP é o caso mais claro: o modelo prevê `r pct(PC_T("deficiencia", "LP", TRUE, "previsto"))`, e no teste só `r PC_T("deficiencia", "LP", TRUE, "abaixo")` dos `r PC_T("deficiencia", "LP", TRUE, "alunos")` alunos está abaixo do básico. O mesmo vale, em menor grau, para o transtorno do espectro autista (`r PC_T("tea", "MT", TRUE, "alunos")` alunos) e para quem não tem tempo de lazer (`r PC_T("sem_lazer", "LP", TRUE, "alunos")` alunos).
+
+O modelo não erra sistematicamente para um lado: em parte dos grupos o observado fica acima do previsto, em parte fica abaixo.
+
+## Acúmulo de fatores
+
+O modelo diz que o risco se acumula: cada característica a mais multiplica a chance. Para conferir, os alunos do teste foram agrupados pelo número de características do modelo que cada um tem.
+
+```{r fig-acumulo, fig.height = 3.8}
+perfis %>%
+  mutate(disciplina = nome_disc[disciplina]) %>%
+  ggplot(aes(fatores, group = 1)) +
+  geom_linerange(aes(ymin = ic_inf, ymax = ic_sup, color = disciplina), alpha = 0.3, linewidth = 3.2) +
+  geom_point(aes(y = observado, color = disciplina), size = 3) +
+  geom_line(aes(y = previsto), color = "grey35", linetype = "dashed") +
+  geom_point(aes(y = previsto), color = "grey35", shape = 4, size = 3, stroke = 1.1) +
+  facet_wrap(~ disciplina) +
+  scale_color_manual(values = cores) +
+  scale_y_continuous(labels = eixo_pct, limits = c(0, NA)) +
+  labs(x = "Número de características do modelo que o aluno tem",
+       y = "% abaixo do básico no teste",
+       caption = "Ponto: proporção observada, com IC de 95%. X tracejado: probabilidade média prevista.") +
+  theme(legend.position = "none")
+```
+
+```{r tab-acumulo}
+perfis %>%
+  transmute(disciplina, Fatores = fatores,
+            pct_al = num(100 * pct_dos_alunos, 1),
+            pct_ab = num(100 * pct_dos_abaixo, 1),
+            obs = sprintf("%s (%s a %s)", num(100 * observado, 1), num(100 * ic_inf, 1), num(100 * ic_sup, 1)),
+            prev = num(100 * previsto, 1)) %>%
+  pivot_wider(names_from = disciplina, values_from = c(pct_al, pct_ab, obs, prev)) %>%
+  transmute(Fatores,
+            `% dos alunos` = pct_al_LP,
+            `% dos abaixo do básico LP` = pct_ab_LP, `Observado LP, % (IC 95%)` = obs_LP, `Previsto LP, %` = prev_LP,
+            `% dos abaixo do básico MT` = pct_ab_MT, `Observado MT, % (IC 95%)` = obs_MT, `Previsto MT, %` = prev_MT) %>%
+  knitr::kable(align = "lrrrrrrr")
+```
+
+A proporção observada sobe com o número de fatores, de `r pct(FX("LP", "0", "observado"))` entre os alunos sem nenhum para `r pct(FX("LP", "4 ou mais", "observado"))` entre os que têm quatro ou mais em LP, e de `r pct(FX("MT", "0", "observado"))` para `r pct(FX("MT", "4 ou mais", "observado"))` em MT. Nas dez faixas, o previsto fica dentro do intervalo do observado. A subida não é perfeita: de dois para três fatores a proporção observada não cresce, nas duas disciplinas. A faixa de três fatores tem menos de 100 alunos, e a diferença cabe no intervalo.
+
+A tabela mostra também onde estão os alunos abaixo do básico. Os `r pct(FX("LP", "0", "pct_dos_alunos"))` de alunos sem nenhum fator concentram só `r pct(FX("LP", "0", "pct_dos_abaixo"))` dos abaixo do básico em LP e `r pct(FX("MT", "0", "pct_dos_abaixo"))` em MT. Os `r pct(FX("LP", "4 ou mais", "pct_dos_alunos"))` com quatro ou mais concentram `r pct(FX("LP", "4 ou mais", "pct_dos_abaixo"))` em LP e `r pct(FX("MT", "4 ou mais", "pct_dos_abaixo"))` em MT.
+
+Contar fatores é uma simplificação, porque trata todas as características como se pesassem igual. O modelo não faz isso: ele combina as características pelas suas razões de chances. A verificação seguinte usa a probabilidade que o modelo dá a cada aluno.
+
+## Classificação em risco
+
+Uma aplicação do modelo é marcar alunos "em risco", para que a escola acompanhe esses alunos primeiro. Para isso é preciso um corte na probabilidade prevista. O corte foi definido na base de treino, nunca no teste: "em risco" é estar entre os 20% (ou os 10%) de alunos com maior probabilidade prevista no treino. Os cortes são `r pct(cortes$LP[["top20"]])` (20% maiores) e `r pct(cortes$LP[["top10"]])` (10% maiores) em LP, e `r pct(cortes$MT[["top20"]])` e `r pct(cortes$MT[["top10"]])` em MT. Depois o mesmo corte foi aplicado aos alunos do teste.
+
+```{r tab-classificacao}
+classificacao %>%
+  mutate(Disciplina = nome_disc[disciplina],
+         `Em risco` = if_else(nivel == "top20", "20% de maior risco", "10% de maior risco")) %>%
+  transmute(Disciplina, `Em risco`,
+            `Alunos marcados` = sprintf("%s (%s)", alunos_marcados, pct(pct_marcados)),
+            `Abaixo do básico entre os marcados` = pct(abaixo_marcados),
+            `Abaixo do básico entre os não marcados` = pct(abaixo_nao_marc),
+            `Dos abaixo do básico, quantos foram marcados` = pct(pct_abaixo_pegos)) %>%
+  knitr::kable(align = "llrrrr")
+```
+
+Marcando os 20% de maior risco, a escola acompanharia `r pct(CL("LP", "top20", "pct_marcados"))` dos alunos do teste e alcançaria `r pct(CL("LP", "top20", "pct_abaixo_pegos"))` dos que estão abaixo do básico em LP (`r pct(CL("MT", "top20", "pct_abaixo_pegos"))` em MT). Entre os marcados, `r pct(CL("LP", "top20", "abaixo_marcados"))` estão abaixo do básico em LP, quase três vezes os `r pct(CL("LP", "top20", "abaixo_nao_marc"))` dos não marcados. Um corte mais rigoroso, de 10%, marca grupos mais certeiros (`r pct(CL("LP", "top10", "abaixo_marcados"))` abaixo do básico entre os marcados em LP), mas alcança menos alunos (`r pct(CL("LP", "top10", "pct_abaixo_pegos"))`).
+
+A marcação funciona como priorização, não como diagnóstico. A maioria dos alunos marcados não está abaixo do básico, e mais da metade dos que estão não é marcada. Isso é coerente com um modelo feito de perguntas de sim ou não de um questionário: muito do desempenho depende de coisas que ele não mede.
+
+## Combinações específicas de características
+
+O modelo dá uma probabilidade para qualquer combinação de características, multiplicando as razões de chances, mesmo para combinações que não existem nos dados. A tabela acompanha, no treino, um exemplo em que as características são acrescentadas uma a uma.
+
+```{r combinacao}
+cadeia <- c("reprovou", "idade_12", "abandonou", "entrada_8", "inse_baixo", "sem_mae")
+tab_cadeia <- map_dfr(seq_along(cadeia), \(k) {
+  g <- apply(treino[cadeia[1:k]], 1, all)
+  tibble(k = k, alunos = sum(g),
+         obs_LP  = if (sum(g) > 0) mean(treino$abaixo_LP[g]) else NA_real_,
+         prev_LP = if (sum(g) > 0) mean(fitted(modelos$LP$final)[g]) else NA_real_)
+})
+tab_cadeia %>%
+  mutate(`Características (todas ao mesmo tempo)` =
+           c(grupos$grupo[match(cadeia[1], grupos$nome)],
+             paste("+", sub("^(.)(?=\\p{Ll})", "\\L\\1", grupos$grupo[match(cadeia[-1], grupos$nome)], perl = TRUE))),
+         `Alunos no treino` = num(alunos),
+         `Observado LP` = if_else(is.na(obs_LP), "", pct(obs_LP)),
+         `Previsto LP` = if_else(is.na(prev_LP), "", pct(prev_LP))) %>%
+  select(-k, -alunos, -obs_LP, -prev_LP) %>%
+  knitr::kable(align = "lrrr")
+```
+
+Com uma ou duas características, há centenas de alunos e o previsto coincide com o observado. A partir da terceira, os grupos encolhem rápido: com cinco características são `r tab_cadeia$alunos[5]` alunos, e com seis, nenhum. Para combinações assim, a probabilidade vem só da suposição de que as razões de chances se multiplicam, sem dado para conferir. Os alunos com muitas características são raros, e nos poucos que existem o modelo tende a superestimar o risco. A probabilidade de uma combinação incomum deve ser lida como indicação de risco alto, não como um valor preciso.
+
+# Aplicação: avaliar um aluno
+
+O modelo pode ser usado para estimar o risco de um aluno a partir das suas características. O script `R/08` traz a função `avalia_aluno()`, e o grupo fez um aplicativo simples em Shiny (`app/app.R`) que faz a mesma conta: marcam-se as características do aluno e o aplicativo mostra a probabilidade prevista em LP e MT e se o aluno está entre os 20% ou os 10% de maior risco.
+
+```{r tab-aplicacao}
+exemplos <- list(
+  "Nenhuma característica"                                      = character(0),
+  "Rua sem asfalto"                                             = "sem_asfalto",
+  "Reprovou e tem 12 anos ou mais"                              = c("reprovou", "idade_12"),
+  "Reprovou, 12 anos ou mais, INSE I e II e sem tempo de lazer" = c("reprovou", "idade_12", "inse_baixo", "sem_lazer")
+)
+nivel <- function(top10, top20) case_when(top10 ~ "risco alto", top20 ~ "risco moderado", TRUE ~ "fora dos cortes")
+map_dfr(names(exemplos), \(nm) {
+  r <- avalia_aluno(exemplos[[nm]])
+  tibble(Aluno = nm,
+         LP = sprintf("%s, %s", pct(r$probabilidade[1]), nivel(r$em_risco_top10[1], r$em_risco_top20[1])),
+         MT = sprintf("%s, %s", pct(r$probabilidade[2]), nivel(r$em_risco_top10[2], r$em_risco_top20[2])))
+}) %>%
+  knitr::kable(align = "lll")
+```
+
+Uma característica sozinha não coloca o aluno entre os de maior risco. Duas características fortes, como reprovação e idade acima da esperada, já colocam. A seção anterior dá os limites dessa leitura: a marcação acerta o grupo de alunos a priorizar, não o diagnóstico de cada um, e combinações raras de características têm probabilidade menos confiável.
 
 # Conclusões
 
@@ -216,7 +376,9 @@ A trajetória escolar e o nível socioeconômico têm as razões de chances mais
 
 Para a SME, o resultado útil é o acúmulo. Um aluno sem nenhum dos fatores tem cerca de `r num(100 * base[["LP"]])`% de probabilidade de estar abaixo do básico em LP e `r num(100 * base[["MT"]])`% em MT, e cada fator acrescentado multiplica a chance. Boa parte desses fatores, como reprovação, idade e abandono, já está nos registros da escola.
 
-Esses resultados vêm só da base de treino. Ainda falta conferir em dados que o modelo não viu se as associações se repetem.
+Na base de teste, com alunos que o modelo não viu, o que ele diz se confirma em probabilidades condicionais. Em `r n_dentro` dos `r n_grupos` grupos de alunos definidos por uma característica, a probabilidade prevista cai dentro do intervalo da proporção observada, e a proporção observada sobe com o número de características acumuladas, como o modelo prevê. A exceção é não morar com a mãe em LP, e nos grupos pequenos a conclusão fica incerta.
+
+Como ferramenta, o modelo serve para priorizar. Marcando os 20% de alunos de maior risco, a escola alcançaria cerca de `r pct(CL("LP", "top20", "pct_abaixo_pegos"))` dos alunos abaixo do básico em LP e `r pct(CL("MT", "top20", "pct_abaixo_pegos"))` em MT, mas a maioria dos marcados não estaria abaixo do básico. O aplicativo feito pelo grupo mostra esse uso para um aluno, com o cuidado de que combinações raras de características têm probabilidade menos confiável.
 
 # Limitações
 
@@ -224,14 +386,13 @@ As razões de chances medem associação, não causa. O modelo não permite dize
 
 A seleção de variáveis foi feita em uma única rodada pelo valor-p, seguindo o procedimento do professor. Variáveis próximas do corte, como o abandono em LP, poderiam entrar ou sair com outra amostra, e a seleção pelo valor-p tende a deixar os coeficientes das variáveis mantidas um pouco maiores do que seriam.
 
-O modelo não tem interações e trata cada característica como presente ou ausente. Variáveis com gradiente, como o INSE e a idade, perdem informação ao serem cortadas em dois grupos.
+O modelo não tem interações e trata cada característica como presente ou ausente. Variáveis com gradiente, como o INSE e a idade, perdem informação ao serem cortadas em dois grupos. Sem interações, as razões de chances se multiplicam livremente, e nos poucos alunos com muitas características o modelo tende a superestimar o risco.
+
+A base de teste tem `r num(nrow(teste))` alunos, e vários grupos têm menos de 50. Para esses grupos, a verificação é fraca, tanto quando concorda com o modelo quanto quando discorda.
 
 Continuam valendo as limitações do relatório descritivo: a base só inclui alunos que responderam a todo o questionário, o que subestima a proporção abaixo do básico, e as características vêm das respostas de crianças de cerca de 10 anos.
 
 # Próximas etapas
 
-Para discutir com o professor:
-
-1. como usar a base de teste (1.006 alunos) para verificar o modelo;
-2. a comparação com as planilhas de coeficientes que ele enviou;
-3. as etapas seguintes do trabalho.
+1. Discutir com o professor o uso do modelo para combinações de características que não aparecem nos dados e se vale testar interações.
+2. Apresentação final, com a demonstração do aplicativo.

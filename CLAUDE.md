@@ -243,11 +243,30 @@ Saídas em `data/modelo/`: `modelo_grupo_LP.csv`, `modelo_grupo_MT.csv`,
 1. Base de teste, plano de 18/11/2026: (1) probabilidades condicionais,
    modelo x prática: feito; (2) descritiva x modelo: só em slide; (3) perfis
    por número de fatores: feito; (3b) classificação em risco no teste e
-   função `avalia_aluno`: feito; (4) seção nova no relatório, com a
-   interpretação dos testes: a fazer.
-2. Relatório do modelo em `Entregas/relatorio_modelo.Rmd` (até a
-   interpretação): falta a revisão do grupo.
-3. Apresentação final em 02/12/2026: 8 minutos, roteiro de 5 slides,
+   função `avalia_aluno`: feito; (4) seção nova no relatório: feito em
+   19/11/2026.
+2. Relatório do modelo em `Entregas/relatorio_modelo.Rmd`, completo: seleção,
+   razões de chances, verificação na base de teste (por característica,
+   acúmulo de fatores, classificação em risco, combinações específicas) e
+   aplicação (`avalia_aluno` e app). O relatório usa o objeto `perfis` do
+   `R/08`; o exemplo de perfis do próprio relatório se chama `perfis_ex`.
+   Falta a revisão do grupo.
+3. Pergunta enviada (ou a enviar) ao professor, 19/11/2026: é correto aplicar
+   o modelo a combinações de características que não existem nos dados
+   (multiplicando as razões de chances)? Vale avisar no app quando a
+   combinação tem poucos alunos parecidos, ou testar interações? Evidência:
+   reprovou + 12 anos tem 462 alunos no treino e previsto = observado; com
+   5 características da cadeia do exemplo sobram 3 alunos, com 6 nenhum.
+   Com 8+ fatores, previsto 67,3% x observado 52,9% em LP (treino).
+   Resposta do professor (20/11/2026): "faz sentido, sim, porque as variáveis
+   foram incluídas no modelo sem considerar interações entre elas. Então,
+   estamos assumindo que seus efeitos são aditivos na escala do logito." Ele
+   pediu como foi calculado o 62,9% do exemplo do app (LP, 8 características:
+   reprovou, idade_12, abandonou, entrada_8, inse_baixo, sem_mae, sem_wifi,
+   sem_asfalto): logito = -3,4042 + soma dos 8 coeficientes (3,9315) = 0,5274;
+   p = 1/(1 + e^-0,5274) = 62,9%. Equivale a chance base 0,0332 x produto das
+   razões de chances (50,99) = 1,6945.
+4. Apresentação final em 02/12/2026: 8 minutos, roteiro de 5 slides,
    todos os integrantes falam. Deck criado e ainda vazio:
    https://claude.ai/artifact/4bemDADkDxAS3gmjKvqmGf
 
