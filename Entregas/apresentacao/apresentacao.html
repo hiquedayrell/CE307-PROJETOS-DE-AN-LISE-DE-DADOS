@@ -78,7 +78,7 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
 .slide::after { content: ""; position: absolute; right: 130px; top: 44px; width: 120px; height: 72px; background: var(--ufpr);
   -webkit-mask: var(--logo-ufpr) center / contain no-repeat; mask: var(--logo-ufpr) center / contain no-repeat; }
 
-.etapa { position: absolute; left: 130px; top: 62px; font-size: 26px; font-weight: 400; color: var(--ufpr); letter-spacing: 0.02em; }
+.etapa { position: absolute; left: 130px; top: 62px; font-size: 26px; font-weight: 600; color: var(--ufpr); letter-spacing: 0.02em; }
 .titulo-slide { position: absolute; left: 130px; top: 104px; width: 1500px; font-family: var(--font-display);
   font-size: 58px; line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; color: var(--tinta); }
 
@@ -89,7 +89,7 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
 .lista { list-style: none; display: flex; flex-direction: column; gap: 26px; }
 .lista li { position: relative; padding-left: 36px; font-size: 30px; line-height: 1.38; color: var(--tinta); }
 .lista li::before { content: ""; position: absolute; left: 0; top: 15px; width: 14px; height: 14px; border-radius: 3px; background: var(--ufpr); }
-.lista li .num-dest { font-weight: 400; color: var(--ufpr); }
+.lista li .num-dest { font-weight: 700; color: var(--ufpr); }
 .lista.compacta { gap: 20px; }
 .lista.compacta li { font-size: 27px; }
 
@@ -99,7 +99,7 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
 
 /* Botão que abre o painel */
 .botao { display: inline-flex; align-items: center; gap: 14px; padding: 16px 28px; border-radius: 8px;
-  background: var(--ufpr); color: #FFFFFF; font-size: 26px; font-weight: 400; text-decoration: none; }
+  background: var(--ufpr); color: #FFFFFF; font-size: 26px; font-weight: 600; text-decoration: none; }
 .botao:hover { background: #003D68; }
 .botao:focus-visible { outline: 4px solid var(--marinho); outline-offset: 4px; }
 .botao::after { content: "↗"; font-size: 26px; }
@@ -121,7 +121,7 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
    =========================================== */
 .capa::after { right: auto; left: 130px; top: 90px; width: 250px; height: 150px; }
 .capa .inst { position: absolute; left: 130px; top: 280px; font-size: 26px; font-weight: 400; color: var(--tinta-2); letter-spacing: 0.01em; }
-.capa .eixo { position: absolute; left: 130px; top: 324px; font-size: 26px; font-weight: 400; color: var(--ufpr); letter-spacing: 0.01em; }
+.capa .eixo { position: absolute; left: 130px; top: 324px; font-size: 26px; font-weight: 600; color: var(--ufpr); letter-spacing: 0.01em; }
 .capa h1 { position: absolute; left: 130px; top: 400px; width: 1080px; font-family: var(--font-display); font-size: 62px; line-height: 1.12; font-weight: 700; color: var(--tinta); }
 .capa .sub { position: absolute; left: 130px; top: 640px; width: 1020px; font-size: 30px; line-height: 1.4; color: var(--tinta-2); }
 .capa .grade { left: 1330px; top: 290px; }
@@ -132,14 +132,19 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
 /* SLIDE 1: CONTEXTO E DEMANDA */
 .s1 .lista { position: absolute; left: 130px; top: 270px; width: 1000px; }
 .s1 .placar { position: absolute; left: 1230px; top: 290px; width: 560px; display: grid; grid-template-columns: auto 1fr 1fr; gap: 22px 30px; align-items: baseline; }
-.s1 .placar .cab { font-size: 24px; font-weight: 400; color: var(--tinta-2); }
-.s1 .placar .local { font-size: 28px; font-weight: 400; color: var(--tinta); }
-.s1 .placar .valor { font-family: var(--font-display); font-size: 72px; font-weight: 400; line-height: 1; color: var(--ufpr); }
+.s1 .placar .cab { font-size: 24px; font-weight: 600; color: var(--tinta-2); }
+.s1 .placar .local { font-size: 28px; font-weight: 600; color: var(--tinta); }
+.s1 .placar .valor { font-family: var(--font-display); font-size: 72px; font-weight: 700; line-height: 1; color: var(--ufpr); }
 .s1 .placar .valor.cwb { color: var(--tinta); }
 .s1 .placar-nota { position: absolute; left: 1230px; top: 640px; width: 560px; font-size: 22px; line-height: 1.45; color: var(--tinta-2); }
 
 /* SLIDE 2: SOLUÇÃO */
 .s2 .lista { position: absolute; left: 130px; top: 260px; width: 800px; }
+.etapas-proc { position: absolute; left: 130px; top: 255px; width: 820px; list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.etapas-proc li { display: grid; grid-template-columns: 46px 1fr; gap: 18px; align-items: baseline; font-size: 25px; line-height: 1.35; color: var(--tinta); }
+.etapas-proc .n { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--ufpr); color: #FFFFFF; font-size: 21px; font-weight: 700; transform: translateY(-4px); }
+.etapas-proc .nome { font-weight: 600; color: var(--ufpr); }
+.etapas-proc .num-dest { font-weight: 700; color: var(--ufpr); }
 .s2 .cartao-img { left: 1000px; top: 270px; width: 790px; padding: 8px; }
 .s2 .acao { position: absolute; left: 1000px; top: 750px; display: flex; flex-direction: column; gap: 14px; }
 .s2 .acao span { font-size: 22px; color: var(--tinta-2); }
@@ -147,7 +152,7 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
 /* Links para os relatórios completos (slides 2 e 5) */
 .relatorios { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 22px; color: var(--tinta-2); }
 .relatorios a { display: inline-flex; padding: 10px 18px; border-radius: 8px; border: 2px solid var(--ufpr);
-  color: var(--ufpr); font-weight: 400; text-decoration: none; }
+  color: var(--ufpr); font-weight: 600; text-decoration: none; }
 .relatorios a:hover { background: var(--azul-claro); }
 .relatorios a:focus-visible { outline: 3px solid var(--marinho); outline-offset: 3px; }
 .s5 .relatorios { position: absolute; right: 130px; top: 830px; }
@@ -159,8 +164,15 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
 .s3c .lista { left: 1250px; width: 560px; }
 /* Etapas do processo, no centro do rodapé */
 .passos { position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%); display: flex; gap: 8px; z-index: 2; }
-.passos span { font-size: 19px; font-weight: 400; padding: 4px 14px; border-radius: 999px; border: 1px solid var(--linha); color: var(--tinta-2); background: var(--fundo); }
+.passos span { font-size: 19px; font-weight: 600; padding: 4px 14px; border-radius: 999px; border: 1px solid var(--linha); color: var(--tinta-2); background: var(--fundo); }
 .passos span.agora { background: var(--ufpr); color: #FFFFFF; border-color: var(--ufpr); }
+
+.cenario { position: absolute; left: 1210px; top: 600px; width: 600px; padding: 24px 28px; border-radius: 8px; background: var(--azul-claro); border: 1px solid #C5D6EA; }
+.cenario-tit { font-size: 24px; line-height: 1.35; color: var(--tinta); }
+.cenario-num { display: grid; grid-template-columns: auto auto auto auto; justify-content: start; align-items: baseline; gap: 6px 18px; margin: 14px 0 10px; }
+.cenario-num span { font-size: 24px; font-weight: 600; color: var(--tinta-2); }
+.cenario-num strong { font-size: 56px; font-weight: 700; color: var(--ufpr); line-height: 1; margin-right: 22px; }
+.cenario-ref { font-size: 21px; line-height: 1.4; color: var(--tinta-2); }
 
 /* SLIDE 4: IMPACTO, com o painel ao vivo */
 .s4 .vivo { position: absolute; left: 110px; top: 200px; width: 1080px; height: 760px; border-radius: 8px; overflow: hidden;
@@ -221,10 +233,9 @@ body.editando [data-editavel] { outline: 2px dashed rgba(0, 82, 150, 0.5); outli
       <h2 class="titulo-slide reveal d1">Alunos do 5º ano abaixo do nível básico</h2>
       <ul class="lista">
         <li class="reveal d2">Parceiro: Secretaria Municipal de Educação de Curitiba (SME).</li>
-        <li class="reveal d3">O problema: no Saeb 2023, <span class="num-dest">7,7%</span> dos alunos do 5º ano estão abaixo do básico em Língua Portuguesa e <span class="num-dest">11,0%</span> em Matemática. A referência é de até 5%.</li>
-        <li class="reveal d4">Em Curitiba: <span class="num-dest">4,2%</span> em LP e <span class="num-dest">6,8%</span> em MT. Matemática é o ponto mais frágil nos dois.</li>
-        <li class="reveal d5">A demanda: saber quais alunos concentram mais casos abaixo do básico, para direcionar o apoio.</li>
-        <li class="reveal d6">A pergunta: quais fatores estão associados a estar abaixo do nível básico?</li>
+        <li class="reveal d3">Saeb 2023: <span class="num-dest">7,7%</span> dos alunos do 5º ano abaixo do básico em LP e <span class="num-dest">11,0%</span> em MT. A referência é de até 5%.</li>
+        <li class="reveal d4">Demanda: identificar quais alunos concentram mais casos, para direcionar o apoio.</li>
+        <li class="reveal d5">Pergunta: quais fatores estão associados a estar abaixo do nível básico?</li>
       </ul>
       <div class="placar reveal d3">
         <span></span><span class="cab">LP</span><span class="cab">MT</span>
@@ -240,13 +251,15 @@ body.editando [data-editavel] { outline: 2px dashed rgba(0, 82, 150, 0.5); outli
     <section class="slide s2" aria-label="A solução desenvolvida">
       <p class="etapa reveal d1">2 · A solução desenvolvida</p>
       <h2 class="titulo-slide reveal d1">O que foi desenvolvido</h2>
-      <ul class="lista compacta">
-        <li class="reveal d2">Dados: microdados do Saeb 2023 (Inep). Amostra de <span class="num-dest">10.068</span> alunos do Brasil e <span class="num-dest">4.452</span> de Curitiba, todos com questionário completo.</li>
-        <li class="reveal d3">Cuidado com o viés: quem deixou questão em branco tem <span class="num-dest">19,5%</span> abaixo do básico em LP, contra 7,9% de quem respondeu tudo. Nossos números subestimam o problema.</li>
-        <li class="reveal d4">Relatório descritivo: 18 grupos de alunos e a comparação Curitiba × Brasil.</li>
-        <li class="reveal d5">Modelo de regressão logística, com orientação do Prof. Eduardo, conferido em 1.006 alunos separados para teste.</li>
-        <li class="reveal d6">Painel em Shiny para estimar o risco de um aluno. Tudo em R, R Markdown e GitHub.</li>
-      </ul>
+      <ol class="etapas-proc">
+        <li class="reveal d2"><span class="n">1</span><span class="t"><span class="nome">Amostragem:</span> Saeb 2023 (Inep): <span class="num-dest">10.068</span> alunos sorteados por estado e <span class="num-dest">4.452</span> de Curitiba.</span></li>
+        <li class="reveal d2"><span class="n">2</span><span class="t"><span class="nome">Limpeza:</span> só quem respondeu todo o questionário; 18 características em 0 ou 1.</span></li>
+        <li class="reveal d3"><span class="n">3</span><span class="t"><span class="nome">Separação:</span> <span class="num-dest">9.062</span> alunos para treino e <span class="num-dest">1.006</span> guardados para teste.</span></li>
+        <li class="reveal d3"><span class="n">4</span><span class="t"><span class="nome">Descritiva:</span> proporção abaixo do básico por grupo, no Brasil e em Curitiba.</span></li>
+        <li class="reveal d4"><span class="n">5</span><span class="t"><span class="nome">Modelo:</span> regressão logística no treino, uma para LP e outra para MT.</span></li>
+        <li class="reveal d4"><span class="n">6</span><span class="t"><span class="nome">Teste:</span> previsto pelo modelo contra observado nos alunos de teste.</span></li>
+        <li class="reveal d5"><span class="n">7</span><span class="t"><span class="nome">Painel:</span> app em Shiny, publicado na internet.</span></li>
+      </ol>
       <div class="cartao-img reveal d3"><img src="assets/app.png" alt="Painel em Shiny: com quatro características marcadas, a probabilidade é de 25,2% em Língua Portuguesa e 39,7% em Matemática"></div>
       <div class="acao reveal d5">
         <a class="botao" href="https://henriquedayrell.shinyapps.io/risco-abaixo-basico/?marcar=reprovou,idade_12,inse_baixo,sem_lazer" target="_blank" rel="noopener">Abrir o painel</a>
@@ -254,7 +267,7 @@ body.editando [data-editavel] { outline: 2px dashed rgba(0, 82, 150, 0.5); outli
         <p class="relatorios">Relatórios: <a href="relatorios/relatorio_descritivo.html" target="_blank">Descritivo</a><a href="relatorios/relatorio_modelo.html" target="_blank">Modelo</a></p>
       </div>
       <div class="rodape-slide"><span>A solução desenvolvida</span><span class="pagina"></span></div>
-      <aside class="notas">Fala: [quem]. Cerca de 1 min. A base completa tem 2,4 milhões de alunos; sorteamos uma amostra por estado e ficamos com quem respondeu todo o questionário. Esse filtro gera um viés: quem deixou questões em branco vai pior, então os números são um piso. Três entregas: relatório descritivo (os 18 grupos e Curitiba × Brasil), modelo conferido em alunos separados e o painel. Se der tempo, clicar em "Abrir o painel": abre o app publicado no shinyapps.io com o exemplo da imagem (precisa de internet; a primeira abertura pode levar alguns segundos).</aside>
+      <aside class="notas">Fala: [quem]. Cerca de 1 min. O passo a passo: a base completa tem 2,4 milhões de alunos; sorteamos uma amostra por estado e ficamos com quem respondeu todo o questionário. Criamos 18 características de 0 ou 1. Antes de qualquer análise, separamos 10% dos alunos para teste. Depois vêm a descritiva (os 18 grupos, Brasil e Curitiba), o modelo, o teste e o painel, que são os próximos slides. Se der tempo, clicar em "Abrir o painel": abre o app publicado no shinyapps.io com o exemplo da imagem (precisa de internet; a primeira abertura pode levar alguns segundos).</aside>
     </section>
 
     <!-- ============ 3A. RESULTADOS: A DESCRITIVA ============ -->
@@ -264,11 +277,10 @@ body.editando [data-editavel] { outline: 2px dashed rgba(0, 82, 150, 0.5); outli
       <h2 class="titulo-slide reveal d1">Análise descritiva: alunos abaixo do básico por grupo</h2>
       <div class="cartao-img reveal d2"><img src="assets/grupos_risco.png" alt="Proporção abaixo do básico nos 18 grupos de alunos e entre os demais, em Língua Portuguesa e Matemática; em todos os grupos a proporção é maior que a dos demais"></div>
       <ul class="lista compacta">
-        <li class="reveal d3">Cada característica olhada uma por vez: alunos do grupo contra os demais.</li>
-        <li class="reveal d4">Os 18 grupos têm de 1,5 a 3 vezes mais alunos abaixo do básico.</li>
-        <li class="reveal d5">Já reprovou: <span class="num-dest">19,9%</span> em LP e <span class="num-dest">26,8%</span> em MT, contra 6,3% e 9,2% dos demais.</li>
-        <li class="reveal d6">INSE: de <span class="num-dest">25,2%</span> no nível I a <span class="num-dest">3,0%</span> no nível VII (LP).</li>
-        <li class="reveal d6">Mas as características andam juntas: quem reprovou tende a ser mais velho; quem é mais pobre mora mais em rua sem asfalto.</li>
+        <li class="reveal d3">18 grupos, cada um contra os demais: de <span class="num-dest">1,5 a 3 vezes</span> mais alunos abaixo do básico.</li>
+        <li class="reveal d4">Já reprovou: <span class="num-dest">19,9%</span> (LP) e <span class="num-dest">26,8%</span> (MT), contra 6,3% e 9,2%.</li>
+        <li class="reveal d5">INSE: de <span class="num-dest">25,2%</span> no nível I a <span class="num-dest">3,0%</span> no nível VII (LP).</li>
+        <li class="reveal d6">A mesma descritiva foi feita para Curitiba (<span class="num-dest">4,2%</span> e <span class="num-dest">6,8%</span>), em comparação com o Brasil.</li>
       </ul>
       <div class="rodape-slide"><span>Gráfico do relatório descritivo · base de treino, 9.062 alunos</span><span class="pagina"></span></div>
       <aside class="notas">Fala: [quem]. Cerca de 1 min 15 s. Primeiro passo: a descritiva. Ponto vermelho é a proporção abaixo do básico no grupo; ponto cinza, entre os demais. Em todos os grupos o vermelho fica à direita. As maiores proporções estão na trajetória escolar, na rotina e na relação com a escola; o INSE tem o gradiente mais claro. Fizemos a mesma descritiva para Curitiba: a cidade tem menos alunos abaixo do básico, e a maior parte dessa vantagem acompanha o perfil socioeconômico. Mas olhando uma característica por vez não dá para saber o que cada uma acrescenta, porque elas andam juntas. Por isso o modelo.</aside>
@@ -281,11 +293,14 @@ body.editando [data-editavel] { outline: 2px dashed rgba(0, 82, 150, 0.5); outli
       <h2 class="titulo-slide reveal d1">Modelo de regressão logística: razões de chances</h2>
       <div class="cartao-img reveal d2"><img src="assets/razoes_chances.png" alt="Razões de chances das 15 características que ficaram no modelo, em Língua Portuguesa e em Matemática, todas maiores que 1"></div>
       <ul class="lista compacta">
-        <li class="reveal d3">Regressão logística com as 18 características, uma para LP e outra para MT; ficam as significativas.</li>
-        <li class="reveal d4"><span class="num-dest">15</span> das 18 seguem associadas mesmo com as outras no modelo.</li>
-        <li class="reveal d5">Ex.: quem já reprovou tem chance <span class="num-dest">85%</span> maior em LP e o <span class="num-dest">dobro</span> em MT.</li>
-        <li class="reveal d6">Rua sem iluminação parecia importante na descritiva (12,9% contra 7,4%), mas some: anda junto com rua sem asfalto e escola rural.</li>
+        <li class="reveal d3">Uma regressão por disciplina: <span class="num-dest">15</span> das 18 características se mantêm.</li>
+        <li class="reveal d4">Rua sem iluminação sai: na descritiva parecia forte (12,9% contra 7,4%), mas acompanha a rua sem asfalto e a escola rural.</li>
       </ul>
+      <div class="cenario reveal d5">
+        <p class="cenario-tit">Cenário: já reprovou, tem 12 anos ou mais, INSE I e II e não tem tempo de lazer</p>
+        <div class="cenario-num"><span>LP</span><strong>25,2%</strong><span>MT</span><strong>39,7%</strong></div>
+        <p class="cenario-ref">Sem nenhuma característica: 3,2% em LP e 5,3% em MT. É o exemplo que o painel abre marcado.</p>
+      </div>
       <div class="rodape-slide"><span>Gráfico do relatório do modelo · orientação do Prof. Eduardo Vargas Ferreira</span><span class="pagina"></span></div>
       <aside class="notas">Fala: [quem]. Cerca de 1 min 15 s. Segundo passo: o modelo, seguindo a metodologia proposta pelo professor. Cada ponto é a razão de chances: quantas vezes a chance de estar abaixo do básico fica maior quando o aluno tem a característica, mantidas as outras iguais. A linha tracejada é o 1, que significa "não muda nada". Reprovação, idade, entrada tardia e INSE pesam nas duas disciplinas. A iluminação e a escolaridade da mãe somem quando as outras entram. O modelo foi estimado só com a base de treino; ele não foi aplicado aos alunos de Curitiba.</aside>
     </section>
@@ -297,10 +312,9 @@ body.editando [data-editavel] { outline: 2px dashed rgba(0, 82, 150, 0.5); outli
       <h2 class="titulo-slide reveal d1">Verificação do modelo na base de teste</h2>
       <div class="cartao-img reveal d2"><img src="assets/acumulo_teste.png" alt="Proporção de alunos abaixo do básico no teste por número de características, observada e prevista, subindo de 2,3% a 24,7% em LP e de 4,7% a 29,1% em MT"></div>
       <ul class="lista compacta">
-        <li class="reveal d3">Base separada no início, sem uso no ajuste do modelo.</li>
-        <li class="reveal d4">O risco observado se acumula: de <span class="num-dest">2,3%</span> sem nenhuma característica a <span class="num-dest">24,7%</span> com 4 ou mais (LP).</li>
-        <li class="reveal d5">O previsto (X) acompanha o observado. Por característica, bate em <span class="num-dest">59 de 60</span> grupos.</li>
-        <li class="reveal d6">Os 9% de alunos com 4 ou mais concentram 29% dos abaixo do básico em LP.</li>
+        <li class="reveal d3">1.006 alunos separados no início, fora do ajuste do modelo.</li>
+        <li class="reveal d4">Observado sobe de <span class="num-dest">2,3%</span> (nenhuma característica) a <span class="num-dest">24,7%</span> (4 ou mais) em LP, junto com o previsto.</li>
+        <li class="reveal d5">Por característica, o previsto fica no IC do observado em <span class="num-dest">59 de 60</span> grupos.</li>
       </ul>
       <div class="rodape-slide"><span>Gráfico do relatório do modelo · base de teste, 1.006 alunos</span><span class="pagina"></span></div>
       <aside class="notas">Fala: [quem]. Cerca de 1 min. Terceiro passo: conferir o modelo em alunos que ele não viu, por probabilidades condicionais, como o professor pediu. Agrupando os alunos do teste pelo número de características, a proporção observada sobe e acompanha a prevista. Comparando grupo por grupo (quem tem e quem não tem cada característica, nas duas disciplinas), o previsto cai no intervalo de confiança do observado em 59 de 60; a exceção é "não mora com a mãe" em LP, com poucos casos.</aside>
@@ -312,17 +326,15 @@ body.editando [data-editavel] { outline: 2px dashed rgba(0, 82, 150, 0.5); outli
       <h2 class="titulo-slide reveal d1">Painel de risco e priorização de alunos</h2>
       <div class="vivo reveal d2"><iframe src="https://henriquedayrell.shinyapps.io/risco-abaixo-basico/?marcar=reprovou,idade_12,inse_baixo,sem_lazer" title="Painel de risco ao vivo, publicado no shinyapps.io" loading="eager"></iframe></div>
       <ul class="lista compacta">
-        <li class="reveal d3">Marcam-se as características do aluno e o painel mostra a probabilidade em LP e MT e o nível de risco.</li>
-        <li class="reveal d4">No teste, marcar os 20% de maior risco alcança <span class="num-dest">42%</span> (LP) e <span class="num-dest">45%</span> (MT) dos alunos abaixo do básico.</li>
-        <li class="reveal d5">Os sinais mais fortes, como reprovação, idade e abandono, a escola já tem.</li>
-        <li class="reveal d6">Serve para priorizar, não para diagnosticar um aluno.</li>
+        <li class="reveal d3">No teste, os alunos marcados como risco incluem <span class="num-dest">42%</span> (LP) e <span class="num-dest">45%</span> (MT) dos que estão abaixo do básico.</li>
+        <li class="reveal d4">Prioriza com informação que a escola já tem; não é diagnóstico.</li>
       </ul>
       <div class="acao reveal d6">
         <a class="botao" href="https://henriquedayrell.shinyapps.io/risco-abaixo-basico/" target="_blank" rel="noopener">Abrir o painel</a>
         <span>henriquedayrell.shinyapps.io/risco-abaixo-basico</span>
       </div>
       <div class="rodape-slide"><span>Painel ao vivo · shinyapps.io</span><span class="pagina"></span></div>
-      <aside class="notas">Fala: [quem]. Cerca de 1 min 15 s. O painel está ao vivo dentro do slide: dá para marcar e desmarcar características e o valor muda na hora (depois de clicar no painel, clicar fora dele para voltar a passar os slides com o teclado). Precisa de internet; sem internet aparece a imagem do painel. Valor para a SME: priorizar o acompanhamento com informação que a escola já tem, alcançando quase metade dos alunos abaixo do básico ao olhar 20% dos alunos. A maioria dos marcados não está abaixo do básico, por isso é priorização, não diagnóstico.</aside>
+      <aside class="notas">Fala: [quem]. Cerca de 1 min 15 s. O painel está ao vivo dentro do slide: dá para marcar e desmarcar características e o valor muda na hora (depois de clicar no painel, clicar fora dele para voltar a passar os slides com o teclado). Precisa de internet; sem internet aparece a imagem do painel. Valor para a SME: priorizar o acompanhamento com informação que a escola já tem, alcançando quase metade dos alunos abaixo do básico. Exemplificar ao vivo: marcar e desmarcar as características que fizerem sentido na hora e comentar o que muda (nenhuma característica sozinha passa do corte de risco; com duas ou mais, sim). A maioria dos marcados não está abaixo do básico, por isso é priorização, não diagnóstico.</aside>
     </section>
 
     <!-- ============ 5. LIÇÕES APRENDIDAS E PRÓXIMOS PASSOS ============ -->
@@ -333,18 +345,18 @@ body.editando [data-editavel] { outline: 2px dashed rgba(0, 82, 150, 0.5); outli
         <div class="reveal d2">
           <h3>Próximos passos</h3>
           <ul class="lista compacta">
-            <li>Aplicar o painel e o modelo na rede municipal, para orientar ações de acompanhamento dos alunos.</li>
-            <li>Aplicar o modelo aos 4.452 alunos de Curitiba e conferir o resultado com a SME.</li>
-            <li>Usar dados da própria rede, que separem escolas municipais de estaduais.</li>
-            <li>Testar interações entre as características no modelo.</li>
+            <li>Aplicar o painel e o modelo na rede municipal, para orientar ações de acompanhamento.</li>
+            <li>Aplicar o modelo aos alunos de Curitiba, com dados da própria rede.</li>
+            <li>Testar interações entre as características.</li>
           </ul>
         </div>
         <div class="reveal d3">
           <h3>Desafios</h3>
           <ul class="lista compacta">
-            <li>Grupos com poucos alunos, como TEA e deficiência, dão estimativas incertas no modelo.</li>
-            <li>Entender e comunicar o modelo: a razão de chances multiplica a chance, não a probabilidade, e indica associação, não causa.</li>
-            <li>O filtro de questionário completo deixa de fora alunos com mais dificuldade, então os números subestimam o problema.</li>
+            <li>Grupos com poucos alunos, como TEA e deficiência, dão estimativas incertas.</li>
+            <li>Comunicar o modelo: a razão de chances multiplica a chance, não a probabilidade, e indica associação, não causa.</li>
+            <li>Viés: quem deixou questão em branco tem <span class="num-dest">19,5%</span> abaixo do básico em LP, contra 7,9%; os números são um piso.</li>
+            <li>O painel será usado em alunos fora da amostra: o resultado deles não precisa ser igual ao previsto.</li>
           </ul>
         </div>
       </div>
@@ -355,7 +367,7 @@ body.editando [data-editavel] { outline: 2px dashed rgba(0, 82, 150, 0.5); outli
         <p class="nomes">Orientação: Prof. Eduardo Vargas Ferreira (UFPR) · Parceria: André Zilio, estatístico da SME Curitiba</p>
       </div>
       <div class="rodape-slide"><span>Próximos passos e desafios</span><span class="pagina"></span></div>
-      <aside class="notas">Fala: [quem]. Cerca de 45 s. O principal próximo passo é usar o resultado na prática: aplicar o painel e o modelo aos alunos da rede municipal para orientar ações de acompanhamento. Desafios: grupos com poucos alunos dão estimativas incertas no modelo, e ler o modelo exige cuidado (razão de chances multiplica a chance, não a probabilidade; associação não é causa).</aside>
+      <aside class="notas">Fala: [quem]. Cerca de 45 s. O principal próximo passo é usar o resultado na prática: aplicar o painel e o modelo aos alunos da rede municipal para orientar ações de acompanhamento. Desafios: grupos com poucos alunos dão estimativas incertas no modelo, ler o modelo exige cuidado (razão de chances multiplica a chance, não a probabilidade; associação não é causa), o filtro de questionário completo gera viés (quem deixou questão em branco vai pior, então os números são um piso) e o painel será usado em alunos que não estavam na amostra: o modelo dá a probabilidade de alunos parecidos, e o resultado dos novos alunos pode ser diferente.</aside>
     </section>
 
   </main>

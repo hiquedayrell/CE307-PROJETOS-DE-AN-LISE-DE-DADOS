@@ -316,7 +316,8 @@ Pergunta ao professor sobre usar mais de 5 slides: sem resposta registrada.
   básico na grade da capa), logo da UFPR em todos os slides (arquivo
   `assets/logo_ufpr_portal.png`, branco, baixado do portal ufpr.br; no HTML vai
   embutido em base64 e pintado de azul por máscara CSS, para funcionar também
-  aberto direto do disco). Sem negrito em nenhum texto além dos títulos.
+  aberto direto do disco). Negrito só em títulos, números e rótulos de
+  estrutura; nada de trechos em negrito no meio das frases (o "estilo IA").
   Títulos diretos, sem jogos de palavra: "O que foi desenvolvido", "Análise
   descritiva: alunos abaixo do básico por grupo", "Modelo de regressão
   logística: razões de chances", "Verificação do modelo na base de teste",
@@ -327,6 +328,19 @@ Pergunta ao professor sobre usar mais de 5 slides: sem resposta registrada.
   `?marcar=reprovou,idade_12,...` na URL para abrir com características já
   marcadas.
 - Números escritos à mão no HTML, copiados dos relatórios.
+- Conteúdo (24/11/2026, Henrique): 2 a 4 bullets curtos por slide. Slide 3a
+  cita que a mesma descritiva foi feita para Curitiba (4,2% e 6,8%). Slide 3b
+  tem o cenário que o painel abre marcado (reprovou, 12 anos ou mais, INSE I
+  e II, sem lazer: 25,2% LP e 39,7% MT; sem nenhuma, 3,2% e 5,3%). Slide 2
+  é um passo a passo numerado (amostragem, limpeza, separação treino/teste,
+  descritiva, modelo, teste, painel), sem ferramentas. Slide 4 (painel) não
+  fala em "20% de maior risco" nem lista os selecionados: o exemplo é feito
+  ao vivo, marcando o que fizer sentido na hora. Para a fala: no treino, LP,
+  todos os marcados têm 2 ou mais características (rua sem asfalto 49%,
+  reprovou 40%, INSE I e II 36%, trabalha fora 34%, 12 anos ou mais 32%).
+  Desafios (slide 5) incluem o viés do questionário completo (19,5% x 7,9%)
+  e a limitação do painel: será usado em alunos fora da amostra, e o
+  resultado deles não precisa ser igual ao previsto.
 - Relatórios em HTML para a apresentação e para o git (24/11/2026):
   `Entregas/apresentacao/relatorios/relatorio_descritivo.html` (do
   `relatorio_descritivo_revisado.Rmd`) e `relatorio_modelo.html`. Ficam nessa
