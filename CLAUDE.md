@@ -2,7 +2,9 @@
 
 Projeto de extensão do Eixo 4: Educação Básica Municipal, em parceria com a
 Secretaria Municipal de Educação de Curitiba (SME, André Zilio).
-Grupo: Henrique, Kadu, João Pedro e Pedro.
+Grupo: Henrique Dayrell, Pedro Groxko, Kadu Blank e João Pedro Brustulin.
+Professor orientador: Eduardo Vargas Ferreira. Na SME: André Zilio,
+estatístico. Nomes completos usados na capa e no último slide da apresentação.
 
 **Pergunta de pesquisa:** quais fatores estão associados à maior probabilidade
 de um estudante do 5º ano apresentar proficiência abaixo do nível básico em
@@ -37,6 +39,11 @@ top 10%, moderado = top 20%). O app não estima nada: lê
 do RStudio ou `shiny::runApp("app")`. O app tem acentos em UTF-8, o que
 funciona porque o `runApp` lê o arquivo em UTF-8; não rodar por seleção.
 Conferido: dá as mesmas probabilidades que `avalia_aluno()`.
+Publicado em https://henriquedayrell.shinyapps.io/risco-abaixo-basico/
+(24/11/2026, conta henriquedayrell). Para atualizar: rodar o `R/08` se o
+modelo mudou e depois `source("app/publicar.R")`, que copia os 3 CSVs para
+`app/dados/` (no shinyapps.io só sobe a pasta `app/`) e reenvia. O app procura
+os CSVs em `app/dados/`, depois em `../data/modelo/` e `data/modelo/`.
 `.claude/` (com o `launch.json` que o Claude usa para abrir o app no navegador
 dele) e `PRODUCT.md` (público e princípios do app para a skill /impeccable:
 projeção em sala, tom institucional e sóbrio, evitar cara de template padrão
@@ -266,9 +273,55 @@ Saídas em `data/modelo/`: `modelo_grupo_LP.csv`, `modelo_grupo_MT.csv`,
    sem_asfalto): logito = -3,4042 + soma dos 8 coeficientes (3,9315) = 0,5274;
    p = 1/(1 + e^-0,5274) = 62,9%. Equivale a chance base 0,0332 x produto das
    razões de chances (50,99) = 1,6945.
-4. Apresentação final em 02/12/2026: 8 minutos, roteiro de 5 slides,
-   todos os integrantes falam. Deck criado e ainda vazio:
-   https://claude.ai/artifact/4bemDADkDxAS3gmjKvqmGf
+4. Apresentação final em 02/12/2026, 8 minutos: refeita no roteiro da
+   professora em `Entregas/apresentacao/apresentacao.html` (22/11/2026). Falta
+   o grupo revisar, dividir as falas e ensaiar o tempo. O deck vazio do claude.ai
+   (https://claude.ai/artifact/4bemDADkDxAS3gmjKvqmGf) foi abandonado.
+
+## Apresentação (22/11/2026)
+
+Roteiro obrigatório da professora (8 min, todos falam, foco no que o dado
+revela e para que serve, gráficos legíveis): 1 contexto e demanda; 2 solução
+desenvolvida; 3 principais resultados; 4 impacto extensionista; 5 lições e
+próximos passos.
+
+Decisões do Henrique: em 22/11/2026, apresentação cobrindo o trabalho
+completo com os números observados em primeiro plano (uma versão centrada só
+no modelo foi rejeitada). Em 24/11/2026: o foco não é Curitiba (a descritiva
+foi feita para Curitiba, mas o modelo não foi aplicado lá), e o item 3 do
+roteiro mostra o processo em três slides: descritiva, modelo e teste.
+Pergunta ao professor sobre usar mais de 5 slides: sem resposta registrada.
+
+- `Entregas/apresentacao/apresentacao.html`: capa + 7 slides numerados 1/7 a
+  7/7, seguindo os 5 itens do roteiro: 1 contexto; 2 solução; 3a descritiva
+  (fig-risco, 18 grupos); 3b modelo (fig-or); 3c teste (fig-acumulo); 4
+  impacto, com o painel do shinyapps.io embutido ao vivo (iframe; sem internet
+  aparece a imagem `assets/app.png`); 5 lições. Curitiba só nas notas e no
+  slide 1. Notas de fala somam cerca de 7 min 50 s. Título da capa: "Fatores
+  associados à proficiência abaixo do nível básico no 5º ano do Ensino
+  Fundamental". Estrutura da skill frontend-slides
+  (github.com/zarazhangrui/frontend-slides, MIT). Setas navegam, N mostra
+  notas de fala (com "Fala: [quem]" a preencher), E edita, Ctrl+S baixa uma
+  cópia, F tela cheia. Depois de clicar no painel ao vivo, clicar fora dele
+  para voltar a navegar pelo teclado.
+- Gráficos em `Entregas/apresentacao/assets/` (grupos_risco, razoes_chances,
+  acumulo_teste), gerados por `Entregas/apresentacao/graficos.R` com o mesmo
+  código dos relatórios (só ASCII; nome de coluna com acento não pode ficar
+  entre crases usando código Unicode). `assets/app.png` é a tela do
+  painel com 4 características marcadas.
+- Visual: estilo "grade de alunos" (fundo azul escuro, amarelo-areia `#EFD9AE`
+  para "abaixo do básico"), fontes do sistema para funcionar offline.
+- Botão "Abrir o painel" (slides 2 e 4) leva ao app publicado no
+  shinyapps.io (precisa de internet). O app aceita
+  `?marcar=reprovou,idade_12,...` na URL para abrir com características já
+  marcadas.
+- Números escritos à mão no HTML, copiados dos relatórios.
+- Relatórios em HTML para a apresentação e para o git (24/11/2026):
+  `Entregas/apresentacao/relatorios/relatorio_descritivo.html` (do
+  `relatorio_descritivo_revisado.Rmd`) e `relatorio_modelo.html`. Ficam nessa
+  subpasta porque o `.gitignore` ignora só `Entregas/*.html`. Os slides 2 e 5
+  têm links para eles. Se um relatório mudar: renderizar o `.Rmd` e copiar o
+  HTML de `Entregas/` para essa pasta.
 
 ## Convenções
 

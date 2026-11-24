@@ -145,6 +145,14 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
 .s2 .acao { position: absolute; left: 1000px; top: 760px; display: flex; flex-direction: column; gap: 14px; }
 .s2 .acao span { font-size: 22px; color: var(--claro); }
 
+/* Links para os relatórios completos (slides 2 e 5) */
+.relatorios { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 22px; color: var(--claro); }
+.relatorios a { display: inline-flex; padding: 10px 18px; border-radius: 8px; border: 2px solid var(--areia);
+  color: var(--areia); font-weight: 600; text-decoration: none; }
+.relatorios a:hover { background: rgba(239, 217, 174, 0.12); }
+.relatorios a:focus-visible { outline: 3px solid var(--branco); outline-offset: 3px; }
+.s5 .relatorios { position: absolute; right: 130px; top: 830px; }
+
 /* SLIDES 3A, 3B, 3C: RESULTADOS (descritiva, modelo, teste) */
 .s3 .cartao-img { left: 110px; top: 208px; width: 1040px; padding: 10px; }
 .s3 .lista { position: absolute; left: 1210px; top: 222px; width: 600px; }
@@ -243,6 +251,7 @@ body.editando [data-editavel] { outline: 2px dashed rgba(239, 217, 174, 0.6); ou
       <div class="acao reveal d5">
         <a class="botao" href="https://henriquedayrell.shinyapps.io/risco-abaixo-basico/?marcar=reprovou,idade_12,inse_baixo,sem_lazer" target="_blank" rel="noopener">Abrir o painel</a>
         <span>henriquedayrell.shinyapps.io/risco-abaixo-basico</span>
+        <p class="relatorios">Relatórios: <a href="relatorios/relatorio_descritivo.html" target="_blank">Descritivo</a><a href="relatorios/relatorio_modelo.html" target="_blank">Modelo</a></p>
       </div>
       <div class="rodape-slide"><span>A solução desenvolvida</span><span class="pagina"></span></div>
       <aside class="notas">Fala: [quem]. Cerca de 1 min. A base completa tem 2,4 milhões de alunos; sorteamos uma amostra por estado e ficamos com quem respondeu todo o questionário. Esse filtro gera um viés: quem deixou questões em branco vai pior, então os números são um piso. Três entregas: relatório descritivo (os 18 grupos e Curitiba × Brasil), modelo conferido em alunos separados e o painel. Se der tempo, clicar em "Abrir o painel": abre o app publicado no shinyapps.io com o exemplo da imagem (precisa de internet; a primeira abertura pode levar alguns segundos).</aside>
@@ -340,6 +349,7 @@ body.editando [data-editavel] { outline: 2px dashed rgba(239, 217, 174, 0.6); ou
           </ul>
         </div>
       </div>
+      <p class="relatorios reveal d5">Relatórios completos: <a href="relatorios/relatorio_descritivo.html" target="_blank">Descritivo</a><a href="relatorios/relatorio_modelo.html" target="_blank">Modelo</a></p>
       <div class="obrigado reveal d5">
         <p>Obrigado</p>
         <p class="nomes">Henrique Dayrell · Pedro Groxko · Kadu Blank · João Pedro Brustulin</p>
