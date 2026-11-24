@@ -26,8 +26,14 @@ library(shiny)
 library(bslib)
 library(dplyr)
 
-pasta_modelo <- file.path("..", "data", "modelo")
-if (!dir.exists(pasta_modelo)) pasta_modelo <- file.path("data", "modelo")
+# Onde estão os CSVs do modelo:
+#   - app/dados/: cópia feita por app/publicar.R, a única que sobe para o
+#     shinyapps.io (lá só existe a pasta app/);
+#   - ../data/modelo/: quando o app roda localmente a partir da pasta app/;
+#   - data/modelo/: quando roda a partir da raiz do projeto.
+candidatas <- c("dados", file.path("..", "data", "modelo"), file.path("data", "modelo"))
+pasta_modelo <- candidatas[file.exists(file.path(candidatas, "classificacao_teste.csv"))][1]
+if (is.na(pasta_modelo)) stop("CSVs do modelo não encontrados. Rode o R/08 e, para publicar, app/publicar.R.")
 
 le_modelo <- function(disc) {
   read.csv(file.path(pasta_modelo, paste0("modelo_grupo_", disc, ".csv")),
@@ -251,6 +257,18 @@ server <- function(input, output, session) {
   observeEvent(input$desmarcar, {
     for (i in seq_along(ordem_blocos)) {
       updateCheckboxGroupInput(session, paste0("bloco_", i), selected = character(0))
+    }
+  })
+
+  # Link com características já marcadas, para abrir o app direto num exemplo
+  # (usado na apresentação): http://127.0.0.1:4321/?marcar=reprovou,idade_12
+  observeEvent(session$clientData$url_search, once = TRUE, {
+    pedido <- parseQueryString(session$clientData$url_search)$marcar
+    if (is.null(pedido)) return()
+    nomes <- intersect(strsplit(pedido, ",")[[1]], caracteristicas$nome)
+    for (i in seq_along(ordem_blocos)) {
+      do_bloco <- caracteristicas$nome[caracteristicas$bloco == ordem_blocos[i]]
+      updateCheckboxGroupInput(session, paste0("bloco_", i), selected = intersect(nomes, do_bloco))
     }
   })
 

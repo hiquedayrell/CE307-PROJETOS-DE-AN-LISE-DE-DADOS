@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fatores associados à proficiência abaixo do básico · CE307 UFPR</title>
+<!--
+  Apresentação final do CE307 (UFPR, 2026/2), 02/12/2026, 8 minutos: capa + 5 slides.
+  Segue o roteiro obrigatório da professora: 1 contexto e demanda, 2 solução,
+  3 resultados, 4 impacto extensionista, 5 lições e próximos passos.
+  Cobre o trabalho completo (dados, descritiva, Curitiba x Brasil, modelo, teste
+  e painel), com os números observados em primeiro plano.
+
+  Estrutura da skill frontend-slides (github.com/zarazhangrui/frontend-slides, licença MIT):
+  palco fixo de 1920x1080 escalado para a janela, um único arquivo HTML.
+  Imagens em assets/: gráficos gerados por graficos.R (mesmo código do relatório
+  descritivo) e a tela do painel. Números copiados dos relatórios.
+
+  Navegação: setas, espaço, Page Up/Down, Home/End, roda do mouse ou deslizar o dedo.
+  N   mostra ou esconde as notas de fala do slide.
+  E   entra no modo de edição (clique no texto para editar); Ctrl+S salva uma cópia do arquivo.
+  F   tela cheia.
+
+  O botão "Abrir o painel" leva ao app publicado em https://henriquedayrell.shinyapps.io/risco-abaixo-basico/
+  (precisa de internet). Sem internet, rodar no RStudio shiny::runApp("app") e abrir manualmente.
+-->
+<style>
+/* ===========================================
+   TEMA (cores da UFPR sobre fundo azul escuro)
+   =========================================== */
+:root {
+  --ufpr: #005296;
+  --marinho: #273272;
+  --escuro: #0B2D4F;
+  --mais-escuro: #06182A;
+  --claro: #E0EBF5;
+  --branco: #FFFFFF;
+  --areia: #EFD9AE;          /* "abaixo do básico" em toda a apresentação */
+  --linha: rgba(224, 235, 245, 0.18);
+  --ponto: rgba(224, 235, 245, 0.18);
+  --stage-bg: var(--mais-escuro);
+  --slide-bg: var(--escuro);
+  --font-display: Bahnschrift, "DIN Alternate", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ===========================================
+   VIEWPORT BASE (frontend-slides, MIT): palco fixo 16:9
+   =========================================== */
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: var(--stage-bg, #000); }
+.deck-viewport { position: fixed; inset: 0; overflow: hidden; background: var(--stage-bg, #000); }
+.deck-stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; transform-origin: 0 0; background: var(--slide-bg, #fff); }
+.slide { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; display: block; visibility: hidden; opacity: 0; pointer-events: none; background: var(--slide-bg, #fff); }
+.slide.active, .slide.visible { visibility: visible; opacity: 1; pointer-events: auto; z-index: 1; }
+img, video, canvas, svg { max-width: 100%; max-height: 100%; }
+@media print {
+  html, body { width: 1920px; height: auto; overflow: visible; background: #fff; }
+  .deck-viewport { position: static; overflow: visible; background: #fff; }
+  .deck-stage { position: static; width: auto; height: auto; transform: none !important; background: none; }
+  .slide { position: relative; display: block !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important;
+    width: 1920px; height: 1080px; break-after: page; page-break-after: always; }
+  .slide:last-child { break-after: auto; page-break-after: auto; }
+  .reveal, .grade i { opacity: 1 !important; transform: none !important; }
+  .painel-notas, .progresso, .edit-hotzone, .edit-toggle { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; } }
+
+/* ===========================================
+   ESTRUTURA COMUM
+   =========================================== */
+.slide { font-family: var(--font-body); color: var(--branco);
+  background: radial-gradient(ellipse at 88% 18%, rgba(0, 82, 150, 0.5) 0%, transparent 58%), var(--escuro); }
+.slide::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 14px; background: var(--ufpr); }
+
+.etapa { position: absolute; left: 130px; top: 70px; font-size: 26px; font-weight: 600; color: var(--areia); letter-spacing: 0.02em; }
+.titulo-slide { position: absolute; left: 130px; top: 112px; width: 1660px; font-family: var(--font-display);
+  font-size: 62px; line-height: 1.08; font-weight: 700; letter-spacing: -0.01em; }
+.titulo-slide em { font-style: normal; color: var(--areia); }
+
+.rodape-slide { position: absolute; left: 130px; right: 130px; bottom: 40px; display: flex; justify-content: space-between;
+  font-size: 22px; color: var(--claro); opacity: 0.75; }
+
+/* Bullets */
+.lista { list-style: none; display: flex; flex-direction: column; gap: 26px; }
+.lista li { position: relative; padding-left: 38px; font-size: 30px; line-height: 1.36; color: var(--claro); }
+.lista li::before { content: ""; position: absolute; left: 0; top: 14px; width: 15px; height: 15px; border-radius: 3px; background: var(--areia); }
+.lista li b { color: var(--branco); font-weight: 600; }
+.lista li .num-dest { font-family: var(--font-display); font-weight: 700; color: var(--areia); }
+.lista.compacta { gap: 20px; }
+.lista.compacta li { font-size: 27px; }
+
+/* Cartão branco para gráficos e telas */
+.cartao-img { position: absolute; background: #FFFFFF; border-radius: 12px; padding: 12px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35); }
+.cartao-img img { display: block; width: 100%; height: auto; border-radius: 4px; }
+.fonte-img { position: absolute; font-size: 20px; color: var(--claro); opacity: 0.8; }
+
+/* Botão que abre o painel */
+.botao { display: inline-flex; align-items: center; gap: 14px; padding: 16px 28px; border-radius: 10px;
+  background: var(--areia); color: var(--escuro); font-size: 26px; font-weight: 700; text-decoration: none; }
+.botao:hover { background: #F6E6C6; }
+.botao:focus-visible { outline: 4px solid var(--branco); outline-offset: 4px; }
+.botao::after { content: "↗"; font-size: 26px; }
+
+/* Animação de entrada */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.55s var(--ease), transform 0.55s var(--ease); }
+.slide.visible .reveal { opacity: 1; transform: none; }
+.d1 { transition-delay: 0.06s; } .d2 { transition-delay: 0.16s; } .d3 { transition-delay: 0.26s; }
+.d4 { transition-delay: 0.36s; } .d5 { transition-delay: 0.46s; } .d6 { transition-delay: 0.56s; }
+
+/* Grade de alunos: cada ponto é um aluno */
+.grade { position: absolute; display: grid; grid-template-columns: repeat(10, 34px); gap: 17px; }
+.grade i { width: 34px; height: 34px; border-radius: 50%; background: var(--ponto); display: block; transform: scale(0); transition: transform 0.45s var(--ease); }
+.grade i.abaixo { background: var(--areia); }
+.slide.visible .grade i { transform: scale(1); }
+
+/* ===========================================
+   SLIDE 1: CONTEXTO E DEMANDA
+   =========================================== */
+/* CAPA (slide de título, fora da numeração do roteiro) */
+.capa .inst { position: absolute; left: 130px; top: 96px; font-size: 26px; font-weight: 600; color: var(--claro); letter-spacing: 0.02em; }
+.capa .eixo { position: absolute; left: 130px; top: 150px; font-size: 26px; font-weight: 600; color: var(--areia); letter-spacing: 0.02em; }
+.capa h1 { position: absolute; left: 130px; top: 230px; width: 1080px; font-family: var(--font-display); font-size: 72px; line-height: 1.08; font-weight: 700; }
+.capa h1 em { font-style: normal; color: var(--areia); }
+.capa .sub { position: absolute; left: 130px; top: 590px; width: 1020px; font-size: 32px; line-height: 1.4; color: var(--claro); }
+.capa .grade { left: 1330px; top: 250px; }
+.capa .grade-leg { position: absolute; left: 1330px; top: 780px; width: 470px; font-size: 24px; line-height: 1.4; color: var(--claro); }
+.capa .grade-leg b { color: var(--areia); }
+.capa .creditos { position: absolute; left: 130px; top: 850px; width: 1660px; font-size: 24px; line-height: 1.55; color: var(--claro); }
+.capa .creditos b { color: var(--branco); font-weight: 600; font-size: 28px; }
+
+/* SLIDE 1: CONTEXTO E DEMANDA */
+.s1 .lista { position: absolute; left: 130px; top: 290px; width: 1000px; }
+.s1 .placar { position: absolute; left: 1230px; top: 290px; width: 560px; display: grid; grid-template-columns: auto 1fr 1fr; gap: 22px 30px; align-items: baseline; }
+.s1 .placar .cab { font-size: 24px; font-weight: 600; color: var(--claro); }
+.s1 .placar .local { font-size: 28px; font-weight: 600; color: var(--branco); }
+.s1 .placar .valor { font-family: var(--font-display); font-size: 76px; font-weight: 700; line-height: 1; color: var(--areia); }
+.s1 .placar .valor.cwb { color: var(--branco); }
+.s1 .placar-nota { position: absolute; left: 1230px; top: 640px; width: 560px; font-size: 22px; line-height: 1.45; color: var(--claro); }
+
+/* SLIDE 2: SOLUÇÃO */
+.s2 .lista { position: absolute; left: 130px; top: 270px; width: 800px; }
+.s2 .cartao-img { left: 1000px; top: 280px; width: 790px; padding: 10px; }
+.s2 .acao { position: absolute; left: 1000px; top: 760px; display: flex; flex-direction: column; gap: 14px; }
+.s2 .acao span { font-size: 22px; color: var(--claro); }
+
+/* SLIDES 3A, 3B, 3C: RESULTADOS (descritiva, modelo, teste) */
+.s3 .cartao-img { left: 110px; top: 208px; width: 1040px; padding: 10px; }
+.s3 .lista { position: absolute; left: 1210px; top: 222px; width: 600px; }
+.s3c .cartao-img { top: 228px; width: 1080px; }
+.s3c .lista { left: 1250px; width: 560px; }
+.passos { position: absolute; right: 130px; top: 72px; display: flex; gap: 10px; }
+.passos span { font-size: 20px; font-weight: 600; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--linha); color: var(--claro); opacity: 0.7; }
+.passos span.agora { background: var(--areia); color: var(--escuro); border-color: var(--areia); opacity: 1; }
+
+/* SLIDE 4: IMPACTO, com o painel ao vivo */
+.s4 .vivo { position: absolute; left: 110px; top: 208px; width: 1080px; height: 760px; border-radius: 12px; overflow: hidden;
+  background: #FFFFFF url("assets/app.png") center top / cover no-repeat; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35); }
+.s4 .vivo iframe { width: 100%; height: 100%; border: 0; display: block; background: transparent; }
+.s4 .lista { position: absolute; left: 1250px; top: 222px; width: 560px; }
+.s4 .acao { position: absolute; left: 1250px; top: 820px; display: flex; flex-direction: column; gap: 12px; }
+.s4 .acao span { font-size: 21px; color: var(--claro); }
+
+/* SLIDE 5: LIÇÕES E PRÓXIMOS PASSOS */
+.s5 .colunas { position: absolute; left: 130px; top: 250px; width: 1660px; display: grid; grid-template-columns: 1fr 1fr; gap: 90px; }
+.s5 h3 { font-family: var(--font-display); font-size: 34px; font-weight: 700; margin-bottom: 26px; color: var(--branco); }
+.s5 .obrigado { position: absolute; left: 130px; top: 790px; width: 1660px; font-family: var(--font-display); font-size: 50px; font-weight: 700; }
+.s5 .obrigado .nomes { font-family: var(--font-body); font-size: 25px; font-weight: 400; line-height: 1.5; color: var(--claro); }
+.s5 .obrigado .nomes:nth-child(2) { margin-top: 10px; color: var(--branco); font-weight: 600; }
+
+/* ===========================================
+   NOTAS DE FALA (N), PROGRESSO E EDIÇÃO (E)
+   =========================================== */
+.notas { display: none; }
+.painel-notas { position: fixed; left: 24px; right: 24px; bottom: 24px; max-height: 40vh; overflow: auto; z-index: 900;
+  background: rgba(6, 24, 42, 0.96); color: var(--branco); border: 1px solid var(--linha); border-radius: 12px;
+  padding: 18px 22px; font: 17px/1.5 var(--font-body); display: none; }
+.painel-notas.on { display: block; }
+.painel-notas h4 { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--claro); margin-bottom: 6px; }
+.progresso { position: fixed; left: 0; bottom: 0; height: 4px; background: var(--ufpr); z-index: 800; transition: width 0.3s var(--ease); }
+.edit-hotzone { position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 10000; cursor: pointer; }
+.edit-toggle { position: fixed; top: 16px; left: 16px; z-index: 10001; width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid var(--linha); background: var(--ufpr); color: #fff; font-size: 20px; cursor: pointer;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+.edit-toggle.show, .edit-toggle.active { opacity: 1; pointer-events: auto; }
+body.editando [data-editavel] { outline: 2px dashed rgba(239, 217, 174, 0.6); outline-offset: 6px; }
+</style>
+</head>
+<body>
+<div class="deck-viewport">
+  <main class="deck-stage" id="deckStage">
+
+    <!-- ============ CAPA ============ -->
+    <section class="slide capa active" aria-label="Capa" data-capa>
+      <p class="inst reveal d1">Universidade Federal do Paraná · CE307 Projetos de Análise de Dados · 2026/2</p>
+      <p class="eixo reveal d1">Projeto de extensão · Eixo 4: Educação Básica Municipal</p>
+      <h1 class="reveal d2">Fatores associados à proficiência <em>abaixo do nível básico</em> no 5º ano do Ensino Fundamental</h1>
+      <p class="sub reveal d3">Análise dos microdados do Saeb 2023, com comparação entre Curitiba e Brasil, em parceria com a Secretaria Municipal de Educação de Curitiba</p>
+      <div class="grade" data-total="100" data-abaixo="7,18,23,39,44,51,62,70,85,91,96" aria-hidden="true"></div>
+      <p class="grade-leg reveal d6">De cada 100 alunos da amostra Brasil, <b>11</b> estão abaixo do básico em Matemática.</p>
+      <div class="creditos reveal d5">
+        <p><b>Henrique Dayrell · Pedro Groxko · Kadu Blank · João Pedro Brustulin</b></p>
+        <p>Orientação: Prof. Eduardo Vargas Ferreira · Parceria: André Zilio, estatístico da SME Curitiba</p>
+      </div>
+      <div class="rodape-slide"><span>Curitiba, 02/12/2026</span><span></span></div>
+      <aside class="notas">Fala: [quem]. Cerca de 20 s. Apresentar o grupo, o orientador e o parceiro na SME, e o tema: fatores associados a alunos do 5º ano abaixo do nível básico.</aside>
+    </section>
+
+    <!-- ============ 1. O CONTEXTO E A DEMANDA ============ -->
+    <section class="slide s1" aria-label="O contexto e a demanda">
+      <p class="etapa reveal d1">1 · O contexto e a demanda</p>
+      <h2 class="titulo-slide reveal d1">Alunos do 5º ano <em>abaixo do nível básico</em></h2>
+      <ul class="lista">
+        <li class="reveal d2"><b>Parceiro:</b> Secretaria Municipal de Educação de Curitiba (SME).</li>
+        <li class="reveal d3"><b>O problema:</b> no Saeb 2023, <span class="num-dest">7,7%</span> dos alunos do 5º ano estão abaixo do básico em Língua Portuguesa e <span class="num-dest">11,0%</span> em Matemática. A referência é de até 5%.</li>
+        <li class="reveal d4"><b>Em Curitiba:</b> <span class="num-dest">4,2%</span> em LP e <span class="num-dest">6,8%</span> em MT. Matemática é o ponto mais frágil nos dois.</li>
+        <li class="reveal d5"><b>A demanda:</b> saber quais alunos concentram mais casos abaixo do básico, para direcionar o apoio.</li>
+        <li class="reveal d6"><b>A pergunta:</b> quais fatores estão associados a estar abaixo do nível básico?</li>
+      </ul>
+      <div class="placar reveal d3">
+        <span></span><span class="cab">LP</span><span class="cab">MT</span>
+        <span class="local">Brasil</span><span class="valor">7,7%</span><span class="valor">11,0%</span>
+        <span class="local">Curitiba</span><span class="valor cwb">4,2%</span><span class="valor cwb">6,8%</span>
+      </div>
+      <p class="placar-nota reveal d4">Alunos abaixo do nível básico, Saeb 2023. LP: até 150 pontos; MT: até 175.</p>
+      <div class="rodape-slide"><span>O contexto e a demanda</span><span class="pagina"></span></div>
+      <aside class="notas">Fala: [quem]. Cerca de 1 min. O problema: parte dos alunos do 5º ano não atinge o mínimo esperado, acima da referência de 5% (Soares, 2009). Curitiba vai melhor que o Brasil, mas Matemática segue acima da referência. A SME quer saber quais alunos concentram mais casos, para direcionar o apoio.</aside>
+    </section>
+
+    <!-- ============ 2. A SOLUÇÃO DESENVOLVIDA ============ -->
+    <section class="slide s2" aria-label="A solução desenvolvida">
+      <p class="etapa reveal d1">2 · A solução desenvolvida</p>
+      <h2 class="titulo-slide reveal d1">Dados, dois relatórios, um modelo e um <em>painel</em></h2>
+      <ul class="lista compacta">
+        <li class="reveal d2"><b>Dados:</b> microdados do Saeb 2023 (Inep). Amostra de <span class="num-dest">10.068</span> alunos do Brasil e <span class="num-dest">4.452</span> de Curitiba, todos com questionário completo.</li>
+        <li class="reveal d3"><b>Cuidado com o viés:</b> quem deixou questão em branco tem <span class="num-dest">19,5%</span> abaixo do básico em LP, contra 7,9% de quem respondeu tudo. Nossos números subestimam o problema.</li>
+        <li class="reveal d4"><b>Relatório descritivo:</b> 18 grupos de alunos e a comparação Curitiba × Brasil.</li>
+        <li class="reveal d5"><b>Modelo de regressão logística</b>, com orientação do Prof. Eduardo, conferido em 1.006 alunos separados para teste.</li>
+        <li class="reveal d6"><b>Painel em Shiny</b> para estimar o risco de um aluno. Tudo em R, R Markdown e GitHub.</li>
+      </ul>
+      <div class="cartao-img reveal d3"><img src="assets/app.png" alt="Painel em Shiny: com quatro características marcadas, a probabilidade é de 25,2% em Língua Portuguesa e 39,7% em Matemática"></div>
+      <div class="acao reveal d5">
+        <a class="botao" href="https://henriquedayrell.shinyapps.io/risco-abaixo-basico/?marcar=reprovou,idade_12,inse_baixo,sem_lazer" target="_blank" rel="noopener">Abrir o painel</a>
+        <span>henriquedayrell.shinyapps.io/risco-abaixo-basico</span>
+      </div>
+      <div class="rodape-slide"><span>A solução desenvolvida</span><span class="pagina"></span></div>
+      <aside class="notas">Fala: [quem]. Cerca de 1 min. A base completa tem 2,4 milhões de alunos; sorteamos uma amostra por estado e ficamos com quem respondeu todo o questionário. Esse filtro gera um viés: quem deixou questões em branco vai pior, então os números são um piso. Três entregas: relatório descritivo (os 18 grupos e Curitiba × Brasil), modelo conferido em alunos separados e o painel. Se der tempo, clicar em "Abrir o painel": abre o app publicado no shinyapps.io com o exemplo da imagem (precisa de internet; a primeira abertura pode levar alguns segundos).</aside>
+    </section>
+
+    <!-- ============ 3A. RESULTADOS: A DESCRITIVA ============ -->
+    <section class="slide s3" aria-label="Principais resultados: a descritiva">
+      <p class="etapa reveal d1">3 · Principais resultados e evidências</p>
+      <div class="passos reveal d1"><span class="agora">Descritiva</span><span>Modelo</span><span>Teste</span></div>
+      <h2 class="titulo-slide reveal d1">Descritiva: onde estão os alunos <em>abaixo do básico</em></h2>
+      <div class="cartao-img reveal d2"><img src="assets/grupos_risco.png" alt="Proporção abaixo do básico nos 18 grupos de alunos e entre os demais, em Língua Portuguesa e Matemática; em todos os grupos a proporção é maior que a dos demais"></div>
+      <ul class="lista compacta">
+        <li class="reveal d3">Cada característica olhada <b>uma por vez</b>: alunos do grupo contra os demais.</li>
+        <li class="reveal d4">Os 18 grupos têm de <b>1,5 a 3 vezes</b> mais alunos abaixo do básico.</li>
+        <li class="reveal d5"><b>Já reprovou:</b> <span class="num-dest">19,9%</span> em LP e <span class="num-dest">26,8%</span> em MT, contra 6,3% e 9,2% dos demais.</li>
+        <li class="reveal d6"><b>INSE:</b> de <span class="num-dest">25,2%</span> no nível I a <span class="num-dest">3,0%</span> no nível VII (LP).</li>
+        <li class="reveal d6">Mas as características <b>andam juntas</b>: quem reprovou tende a ser mais velho; quem é mais pobre mora mais em rua sem asfalto.</li>
+      </ul>
+      <div class="rodape-slide"><span>Gráfico do relatório descritivo · base de treino, 9.062 alunos</span><span class="pagina"></span></div>
+      <aside class="notas">Fala: [quem]. Cerca de 1 min 15 s. Primeiro passo: a descritiva. Ponto vermelho é a proporção abaixo do básico no grupo; ponto cinza, entre os demais. Em todos os grupos o vermelho fica à direita. As maiores proporções estão na trajetória escolar, na rotina e na relação com a escola; o INSE tem o gradiente mais claro. Fizemos a mesma descritiva para Curitiba: a cidade tem menos alunos abaixo do básico, e a maior parte dessa vantagem acompanha o perfil socioeconômico. Mas olhando uma característica por vez não dá para saber o que cada uma acrescenta, porque elas andam juntas. Por isso o modelo.</aside>
+    </section>
+
+    <!-- ============ 3B. RESULTADOS: O MODELO ============ -->
+    <section class="slide s3" aria-label="Principais resultados: o modelo">
+      <p class="etapa reveal d1">3 · Principais resultados e evidências</p>
+      <div class="passos reveal d1"><span>Descritiva</span><span class="agora">Modelo</span><span>Teste</span></div>
+      <h2 class="titulo-slide reveal d1">Modelo: o que se mantém com tudo <em>junto</em></h2>
+      <div class="cartao-img reveal d2"><img src="assets/razoes_chances.png" alt="Razões de chances das 15 características que ficaram no modelo, em Língua Portuguesa e em Matemática, todas maiores que 1"></div>
+      <ul class="lista compacta">
+        <li class="reveal d3"><b>Regressão logística</b> com as 18 características, uma para LP e outra para MT; ficam as significativas.</li>
+        <li class="reveal d4"><span class="num-dest">15</span> das 18 seguem associadas mesmo com as outras no modelo.</li>
+        <li class="reveal d5">Ex.: quem já reprovou tem chance <span class="num-dest">85%</span> maior em LP e o <span class="num-dest">dobro</span> em MT.</li>
+        <li class="reveal d6"><b>Rua sem iluminação</b> parecia importante na descritiva (12,9% contra 7,4%), mas <b>some</b>: anda junto com rua sem asfalto e escola rural.</li>
+      </ul>
+      <div class="rodape-slide"><span>Gráfico do relatório do modelo · orientação do Prof. Eduardo Vargas Ferreira</span><span class="pagina"></span></div>
+      <aside class="notas">Fala: [quem]. Cerca de 1 min 15 s. Segundo passo: o modelo, seguindo a metodologia proposta pelo professor. Cada ponto é a razão de chances: quantas vezes a chance de estar abaixo do básico fica maior quando o aluno tem a característica, mantidas as outras iguais. A linha tracejada é o 1, que significa "não muda nada". Reprovação, idade, entrada tardia e INSE pesam nas duas disciplinas. A iluminação e a escolaridade da mãe somem quando as outras entram. O modelo foi estimado só com a base de treino; ele não foi aplicado aos alunos de Curitiba.</aside>
+    </section>
+
+    <!-- ============ 3C. RESULTADOS: O TESTE ============ -->
+    <section class="slide s3 s3c" aria-label="Principais resultados: o teste">
+      <p class="etapa reveal d1">3 · Principais resultados e evidências</p>
+      <div class="passos reveal d1"><span>Descritiva</span><span>Modelo</span><span class="agora">Teste</span></div>
+      <h2 class="titulo-slide reveal d1">Teste: confirmado em <em>1.006 alunos</em> que o modelo não viu</h2>
+      <div class="cartao-img reveal d2"><img src="assets/acumulo_teste.png" alt="Proporção de alunos abaixo do básico no teste por número de características, observada e prevista, subindo de 2,3% a 24,7% em LP e de 4,7% a 29,1% em MT"></div>
+      <ul class="lista compacta">
+        <li class="reveal d3">Base separada no início, sem uso no ajuste do modelo.</li>
+        <li class="reveal d4">O risco observado <b>se acumula</b>: de <span class="num-dest">2,3%</span> sem nenhuma característica a <span class="num-dest">24,7%</span> com 4 ou mais (LP).</li>
+        <li class="reveal d5">O previsto (X) acompanha o observado. Por característica, bate em <span class="num-dest">59 de 60</span> grupos.</li>
+        <li class="reveal d6">Os <b>9%</b> de alunos com 4 ou mais concentram <b>29%</b> dos abaixo do básico em LP.</li>
+      </ul>
+      <div class="rodape-slide"><span>Gráfico do relatório do modelo · base de teste, 1.006 alunos</span><span class="pagina"></span></div>
+      <aside class="notas">Fala: [quem]. Cerca de 1 min. Terceiro passo: conferir o modelo em alunos que ele não viu, por probabilidades condicionais, como o professor pediu. Agrupando os alunos do teste pelo número de características, a proporção observada sobe e acompanha a prevista. Comparando grupo por grupo (quem tem e quem não tem cada característica, nas duas disciplinas), o previsto cai no intervalo de confiança do observado em 59 de 60; a exceção é "não mora com a mãe" em LP, com poucos casos.</aside>
+    </section>
+
+    <!-- ============ 4. O IMPACTO EXTENSIONISTA ============ -->
+    <section class="slide s4" aria-label="O impacto extensionista">
+      <p class="etapa reveal d1">4 · O impacto extensionista</p>
+      <h2 class="titulo-slide reveal d1">Um painel para decidir <em>quem acompanhar primeiro</em></h2>
+      <div class="vivo reveal d2"><iframe src="https://henriquedayrell.shinyapps.io/risco-abaixo-basico/?marcar=reprovou,idade_12,inse_baixo,sem_lazer" title="Painel de risco ao vivo, publicado no shinyapps.io" loading="eager"></iframe></div>
+      <ul class="lista compacta">
+        <li class="reveal d3">Marcam-se as características do aluno e o painel mostra a <b>probabilidade</b> em LP e MT e o nível de risco.</li>
+        <li class="reveal d4">No teste, marcar os <b>20% de maior risco</b> alcança <span class="num-dest">42%</span> (LP) e <span class="num-dest">45%</span> (MT) dos alunos abaixo do básico.</li>
+        <li class="reveal d5">Os sinais mais fortes, como reprovação, idade e abandono, <b>a escola já tem</b>.</li>
+        <li class="reveal d6">Serve para <b>priorizar</b>, não para diagnosticar um aluno.</li>
+      </ul>
+      <div class="acao reveal d6">
+        <a class="botao" href="https://henriquedayrell.shinyapps.io/risco-abaixo-basico/" target="_blank" rel="noopener">Abrir o painel</a>
+        <span>henriquedayrell.shinyapps.io/risco-abaixo-basico</span>
+      </div>
+      <div class="rodape-slide"><span>Painel ao vivo · shinyapps.io</span><span class="pagina"></span></div>
+      <aside class="notas">Fala: [quem]. Cerca de 1 min 15 s. O painel está ao vivo dentro do slide: dá para marcar e desmarcar características e o valor muda na hora (depois de clicar no painel, clicar fora dele para voltar a passar os slides com o teclado). Precisa de internet; sem internet aparece a imagem do painel. Valor para a SME: priorizar o acompanhamento com informação que a escola já tem, alcançando quase metade dos alunos abaixo do básico ao olhar 20% dos alunos. A maioria dos marcados não está abaixo do básico, por isso é priorização, não diagnóstico.</aside>
+    </section>
+
+    <!-- ============ 5. LIÇÕES APRENDIDAS E PRÓXIMOS PASSOS ============ -->
+    <section class="slide s5" aria-label="Lições aprendidas e próximos passos">
+      <p class="etapa reveal d1">5 · Lições aprendidas e próximos passos</p>
+      <h2 class="titulo-slide reveal d1">O que aprendemos e o que vem depois</h2>
+      <div class="colunas">
+        <div class="reveal d2">
+          <h3>Desafios</h3>
+          <ul class="lista compacta">
+            <li>O filtro de questionário completo deixa de fora alunos com mais dificuldade: os números <b>subestimam</b> o problema.</li>
+            <li>As características andam juntas: separar o efeito de cada uma exigiu o modelo.</li>
+            <li>Grupos pequenos, como TEA e deficiência, dão resultados incertos.</li>
+            <li>A base não distingue escolas <b>municipais</b> de estaduais.</li>
+          </ul>
+        </div>
+        <div class="reveal d3">
+          <h3>Próximos passos</h3>
+          <ul class="lista compacta">
+            <li>Aplicar o modelo aos <b>4.452 alunos de Curitiba</b>.</li>
+            <li>Trabalhar com dados da própria rede municipal.</li>
+            <li>Testar <b>interações</b> entre as características no modelo.</li>
+            <li>Levar o painel à SME e ajustar com o uso das escolas.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="obrigado reveal d5">
+        <p>Obrigado</p>
+        <p class="nomes">Henrique Dayrell · Pedro Groxko · Kadu Blank · João Pedro Brustulin</p>
+        <p class="nomes">Orientação: Prof. Eduardo Vargas Ferreira (UFPR) · Parceria: André Zilio, estatístico da SME Curitiba</p>
+      </div>
+      <div class="rodape-slide"><span>Lições aprendidas e próximos passos</span><span class="pagina"></span></div>
+      <aside class="notas">Fala: [quem]. Cerca de 45 s. Os resultados mostram associação, não causa. O próximo passo mais útil para a SME é olhar a própria rede municipal, já que a base do Saeb não separa escolas municipais de estaduais.</aside>
+    </section>
+
+  </main>
+</div>
+
+<div class="progresso" id="progresso"></div>
+<div class="painel-notas" id="painelNotas" aria-live="polite"><h4>Notas de fala</h4><p id="textoNotas"></p></div>
+<div class="edit-hotzone"></div>
+<button class="edit-toggle" id="editToggle" title="Modo de edição (E)" aria-label="Modo de edição">✎</button>
+
+<script>
+/* ===========================================
+   GRADE DE ALUNOS
+   =========================================== */
+document.querySelectorAll('.grade').forEach(grade => {
+  const abaixo = new Set((grade.dataset.abaixo || '').split(',').filter(Boolean).map(Number));
+  for (let i = 0; i < Number(grade.dataset.total); i++) {
+    const p = document.createElement('i');
+    if (abaixo.has(i)) p.classList.add('abaixo');
+    p.style.transitionDelay = (0.25 + i * 0.006) + 's';
+    grade.appendChild(p);
+  }
+});
+
+/* ===========================================
+   CONTROLE DA APRESENTAÇÃO
+   =========================================== */
+class SlidePresentation {
+  constructor() {
+    this.slides = [...document.querySelectorAll('.slide')];
+    this.stage = document.getElementById('deckStage');
+    this.atual = 0;
+    /* A capa não entra na numeração: os slides do roteiro vão de 1 a 5 */
+    const roteiro = this.slides.filter(s => !s.hasAttribute('data-capa'));
+    roteiro.forEach((s, i) => {
+      const pg = s.querySelector('.pagina');
+      if (pg) pg.textContent = String(i + 1) + ' / ' + String(roteiro.length);
+    });
+    this.escalaPalco(); this.teclado(); this.toque(); this.roda();
+    const inicial = parseInt(location.hash.replace('#', ''), 10);
+    this.mostra(Number.isFinite(inicial) ? inicial - 1 : 0);
+  }
+  escalaPalco() {
+    const ajusta = () => {
+      const f = Math.min(innerWidth / 1920, innerHeight / 1080);
+      this.stage.style.transform = `translate(${(innerWidth - 1920 * f) / 2}px, ${(innerHeight - 1080 * f) / 2}px) scale(${f})`;
+    };
+    ajusta(); addEventListener('resize', ajusta);
+  }
+  teclado() {
+    document.addEventListener('keydown', e => {
+      if (document.body.classList.contains('editando')) return;
+      if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); this.mostra(this.atual + 1); }
+      else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); this.mostra(this.atual - 1); }
+      else if (e.key === 'Home') this.mostra(0);
+      else if (e.key === 'End') this.mostra(this.slides.length - 1);
+      else if (e.key === 'n' || e.key === 'N') document.getElementById('painelNotas').classList.toggle('on');
+      else if (e.key === 'f' || e.key === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+    });
+  }
+  toque() {
+    let x0 = null;
+    addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+    addEventListener('touchend', e => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 50) this.mostra(this.atual + (dx < 0 ? 1 : -1));
+      x0 = null;
+    });
+  }
+  roda() {
+    let travado = false;
+    addEventListener('wheel', e => {
+      if (travado || Math.abs(e.deltaY) < 20) return;
+      travado = true; setTimeout(() => travado = false, 700);
+      this.mostra(this.atual + (e.deltaY > 0 ? 1 : -1));
+    }, { passive: true });
+  }
+  mostra(i) {
+    this.atual = Math.max(0, Math.min(i, this.slides.length - 1));
+    this.slides.forEach((s, k) => { s.classList.toggle('active', k === this.atual); s.classList.remove('visible'); });
+    const s = this.slides[this.atual];
+    requestAnimationFrame(() => requestAnimationFrame(() => s.classList.add('visible')));
+    document.getElementById('progresso').style.width = ((this.atual + 1) / this.slides.length * 100) + '%';
+    const notas = s.querySelector('.notas');
+    document.getElementById('textoNotas').textContent = notas ? notas.textContent : '';
+    history.replaceState(null, '', '#' + (this.atual + 1));
+  }
+}
+const apresentacao = new SlidePresentation();
+
+/* ===========================================
+   EDIÇÃO NO NAVEGADOR (E liga e desliga; Esc sai; Ctrl+S baixa uma cópia)
+   =========================================== */
+const editor = {
+  isActive: false,
+  alvos() { return document.querySelectorAll('.deck-stage h1, .deck-stage h2, .deck-stage h3, .deck-stage p, .deck-stage li'); },
+  toggleEditMode() {
+    this.isActive = !this.isActive;
+    document.body.classList.toggle('editando', this.isActive);
+    document.getElementById('editToggle').classList.toggle('active', this.isActive);
+    this.alvos().forEach(el => {
+      if (this.isActive) { el.setAttribute('contenteditable', 'true'); el.setAttribute('data-editavel', ''); }
+      else { el.removeAttribute('contenteditable'); el.removeAttribute('data-editavel'); }
+    });
+  },
+  salva() {
+    if (this.isActive) this.toggleEditMode();
+    document.querySelectorAll('.grade').forEach(g => g.innerHTML = '');
+    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+    a.download = 'apresentacao.html';
+    a.click();
+    setTimeout(() => location.reload(), 300);
+  }
+};
+const hotzone = document.querySelector('.edit-hotzone');
+const editToggle = document.getElementById('editToggle');
+let esconde = null;
+editToggle.addEventListener('click', () => editor.toggleEditMode());
+hotzone.addEventListener('click', () => editor.toggleEditMode());
+hotzone.addEventListener('mouseenter', () => { clearTimeout(esconde); editToggle.classList.add('show'); });
+hotzone.addEventListener('mouseleave', () => { esconde = setTimeout(() => { if (!editor.isActive) editToggle.classList.remove('show'); }, 400); });
+editToggle.addEventListener('mouseenter', () => clearTimeout(esconde));
+editToggle.addEventListener('mouseleave', () => { esconde = setTimeout(() => { if (!editor.isActive) editToggle.classList.remove('show'); }, 400); });
+document.addEventListener('keydown', e => {
+  const editandoTexto = e.target.getAttribute && e.target.getAttribute('contenteditable');
+  if ((e.key === 'e' || e.key === 'E') && !editandoTexto) editor.toggleEditMode();
+  if (e.key === 'Escape' && editor.isActive) editor.toggleEditMode();
+  if (e.ctrlKey && (e.key === 's' || e.key === 'S')) { e.preventDefault(); editor.salva(); }
+});
+</script>
+</body>
+</html>
