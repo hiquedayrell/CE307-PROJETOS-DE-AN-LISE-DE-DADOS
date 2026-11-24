@@ -327,6 +327,12 @@ Pergunta ao professor sobre usar mais de 5 slides: sem resposta registrada.
   shinyapps.io (precisa de internet). O app aceita
   `?marcar=reprovou,idade_12,...` na URL para abrir com características já
   marcadas.
+- Cópia offline (24/11/2026): `Entregas/apresentacao/apresentacao_offline.html`,
+  um arquivo só (2,3 MB) com as imagens embutidas e o painel ao vivo trocado
+  pela imagem `app.png`. Gerada por `Entregas/apresentacao/gerar_offline.R`
+  (só ASCII); rodar de novo sempre que `apresentacao.html` mudar. Os botões
+  "Abrir o painel" precisam de internet; os links dos relatórios funcionam
+  se o arquivo ficar na pasta `Entregas/apresentacao/`.
 - Números escritos à mão no HTML, copiados dos relatórios.
 - Conteúdo (24/11/2026, Henrique): 2 a 4 bullets curtos por slide. Slide 3a
   cita que a mesma descritiva foi feita para Curitiba (4,2% e 6,8%). Slide 3b
@@ -338,7 +344,7 @@ Pergunta ao professor sobre usar mais de 5 slides: sem resposta registrada.
   ao vivo, marcando o que fizer sentido na hora. Para a fala: no treino, LP,
   todos os marcados têm 2 ou mais características (rua sem asfalto 49%,
   reprovou 40%, INSE I e II 36%, trabalha fora 34%, 12 anos ou mais 32%).
-  Desafios (slide 5) incluem o viés do questionário completo (19,5% x 7,9%)
+  Desafios (slide 5) incluem o viés do questionário completo (sem números)
   e a limitação do painel: será usado em alunos fora da amostra, e o
   resultado deles não precisa ser igual ao previsto.
 - Relatórios em HTML para a apresentação e para o git (24/11/2026):
