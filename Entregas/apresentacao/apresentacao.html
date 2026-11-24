@@ -26,23 +26,24 @@
 -->
 <style>
 /* ===========================================
-   TEMA (cores da UFPR sobre fundo azul escuro)
+   TEMA: branco com azul UFPR (cores do portal ufpr.br)
    =========================================== */
 :root {
-  --ufpr: #005296;
-  --marinho: #273272;
-  --escuro: #0B2D4F;
-  --mais-escuro: #06182A;
-  --claro: #E0EBF5;
-  --branco: #FFFFFF;
-  --areia: #EFD9AE;          /* "abaixo do básico" em toda a apresentação */
-  --linha: rgba(224, 235, 245, 0.18);
-  --ponto: rgba(224, 235, 245, 0.18);
-  --stage-bg: var(--mais-escuro);
-  --slide-bg: var(--escuro);
-  --font-display: Bahnschrift, "DIN Alternate", "Segoe UI", system-ui, sans-serif;
+  --ufpr: #005296;           /* azul do portal: cor principal e destaques */
+  --marinho: #273272;        /* filete */
+  --azul-claro: #E0EBF5;
+  --fundo: #FFFFFF;
+  --tinta: #1B2233;          /* texto principal */
+  --tinta-2: #4A5160;        /* texto secundário */
+  --linha: #D3DCE8;
+  --ponto: #DCE3EC;          /* aluno na grade */
+  --stage-bg: #E9EDF3;
+  --slide-bg: var(--fundo);
+  --font-display: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --font-body: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Logo da UFPR (arquivo do portal ufpr.br, branco), embutido para funcionar também ao abrir o arquivo direto do disco */
+  --logo-ufpr: url("data:image/png;base64,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");
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -70,41 +71,41 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
 /* ===========================================
    ESTRUTURA COMUM
    =========================================== */
-.slide { font-family: var(--font-body); color: var(--branco);
-  background: radial-gradient(ellipse at 88% 18%, rgba(0, 82, 150, 0.5) 0%, transparent 58%), var(--escuro); }
-.slide::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 14px; background: var(--ufpr); }
+.slide { font-family: var(--font-body); color: var(--tinta); background: var(--fundo); }
+/* Faixa azul no topo, com filete azul-marinho */
+.slide::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 14px; background: var(--ufpr); border-bottom: 4px solid var(--marinho); }
+/* Logo da UFPR (arquivo do portal, branco) pintado de azul pela máscara */
+.slide::after { content: ""; position: absolute; right: 130px; top: 44px; width: 120px; height: 72px; background: var(--ufpr);
+  -webkit-mask: var(--logo-ufpr) center / contain no-repeat; mask: var(--logo-ufpr) center / contain no-repeat; }
 
-.etapa { position: absolute; left: 130px; top: 70px; font-size: 26px; font-weight: 600; color: var(--areia); letter-spacing: 0.02em; }
-.titulo-slide { position: absolute; left: 130px; top: 112px; width: 1660px; font-family: var(--font-display);
-  font-size: 62px; line-height: 1.08; font-weight: 700; letter-spacing: -0.01em; }
-.titulo-slide em { font-style: normal; color: var(--areia); }
+.etapa { position: absolute; left: 130px; top: 62px; font-size: 26px; font-weight: 400; color: var(--ufpr); letter-spacing: 0.02em; }
+.titulo-slide { position: absolute; left: 130px; top: 104px; width: 1500px; font-family: var(--font-display);
+  font-size: 58px; line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; color: var(--tinta); }
 
-.rodape-slide { position: absolute; left: 130px; right: 130px; bottom: 40px; display: flex; justify-content: space-between;
-  font-size: 22px; color: var(--claro); opacity: 0.75; }
+.rodape-slide { position: absolute; left: 130px; right: 130px; bottom: 36px; display: flex; justify-content: space-between;
+  font-size: 22px; color: var(--tinta-2); border-top: 1px solid var(--linha); padding-top: 12px; }
 
 /* Bullets */
 .lista { list-style: none; display: flex; flex-direction: column; gap: 26px; }
-.lista li { position: relative; padding-left: 38px; font-size: 30px; line-height: 1.36; color: var(--claro); }
-.lista li::before { content: ""; position: absolute; left: 0; top: 14px; width: 15px; height: 15px; border-radius: 3px; background: var(--areia); }
-.lista li b { color: var(--branco); font-weight: 600; }
-.lista li .num-dest { font-family: var(--font-display); font-weight: 700; color: var(--areia); }
+.lista li { position: relative; padding-left: 36px; font-size: 30px; line-height: 1.38; color: var(--tinta); }
+.lista li::before { content: ""; position: absolute; left: 0; top: 15px; width: 14px; height: 14px; border-radius: 3px; background: var(--ufpr); }
+.lista li .num-dest { font-weight: 400; color: var(--ufpr); }
 .lista.compacta { gap: 20px; }
 .lista.compacta li { font-size: 27px; }
 
-/* Cartão branco para gráficos e telas */
-.cartao-img { position: absolute; background: #FFFFFF; border-radius: 12px; padding: 12px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35); }
-.cartao-img img { display: block; width: 100%; height: auto; border-radius: 4px; }
-.fonte-img { position: absolute; font-size: 20px; color: var(--claro); opacity: 0.8; }
+/* Moldura para gráficos e telas */
+.cartao-img { position: absolute; background: #FFFFFF; border-radius: 8px; padding: 12px; border: 1px solid var(--linha); }
+.cartao-img img { display: block; width: 100%; height: auto; }
 
 /* Botão que abre o painel */
-.botao { display: inline-flex; align-items: center; gap: 14px; padding: 16px 28px; border-radius: 10px;
-  background: var(--areia); color: var(--escuro); font-size: 26px; font-weight: 700; text-decoration: none; }
-.botao:hover { background: #F6E6C6; }
-.botao:focus-visible { outline: 4px solid var(--branco); outline-offset: 4px; }
+.botao { display: inline-flex; align-items: center; gap: 14px; padding: 16px 28px; border-radius: 8px;
+  background: var(--ufpr); color: #FFFFFF; font-size: 26px; font-weight: 400; text-decoration: none; }
+.botao:hover { background: #003D68; }
+.botao:focus-visible { outline: 4px solid var(--marinho); outline-offset: 4px; }
 .botao::after { content: "↗"; font-size: 26px; }
 
 /* Animação de entrada */
-.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.55s var(--ease), transform 0.55s var(--ease); }
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.5s var(--ease), transform 0.5s var(--ease); }
 .slide.visible .reveal { opacity: 1; transform: none; }
 .d1 { transition-delay: 0.06s; } .d2 { transition-delay: 0.16s; } .d3 { transition-delay: 0.26s; }
 .d4 { transition-delay: 0.36s; } .d5 { transition-delay: 0.46s; } .d6 { transition-delay: 0.56s; }
@@ -112,87 +113,86 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
 /* Grade de alunos: cada ponto é um aluno */
 .grade { position: absolute; display: grid; grid-template-columns: repeat(10, 34px); gap: 17px; }
 .grade i { width: 34px; height: 34px; border-radius: 50%; background: var(--ponto); display: block; transform: scale(0); transition: transform 0.45s var(--ease); }
-.grade i.abaixo { background: var(--areia); }
+.grade i.abaixo { background: var(--ufpr); }
 .slide.visible .grade i { transform: scale(1); }
 
 /* ===========================================
-   SLIDE 1: CONTEXTO E DEMANDA
+   CAPA (slide de título, fora da numeração do roteiro)
    =========================================== */
-/* CAPA (slide de título, fora da numeração do roteiro) */
-.capa .inst { position: absolute; left: 130px; top: 96px; font-size: 26px; font-weight: 600; color: var(--claro); letter-spacing: 0.02em; }
-.capa .eixo { position: absolute; left: 130px; top: 150px; font-size: 26px; font-weight: 600; color: var(--areia); letter-spacing: 0.02em; }
-.capa h1 { position: absolute; left: 130px; top: 230px; width: 1080px; font-family: var(--font-display); font-size: 72px; line-height: 1.08; font-weight: 700; }
-.capa h1 em { font-style: normal; color: var(--areia); }
-.capa .sub { position: absolute; left: 130px; top: 590px; width: 1020px; font-size: 32px; line-height: 1.4; color: var(--claro); }
-.capa .grade { left: 1330px; top: 250px; }
-.capa .grade-leg { position: absolute; left: 1330px; top: 780px; width: 470px; font-size: 24px; line-height: 1.4; color: var(--claro); }
-.capa .grade-leg b { color: var(--areia); }
-.capa .creditos { position: absolute; left: 130px; top: 850px; width: 1660px; font-size: 24px; line-height: 1.55; color: var(--claro); }
-.capa .creditos b { color: var(--branco); font-weight: 600; font-size: 28px; }
+.capa::after { right: auto; left: 130px; top: 90px; width: 250px; height: 150px; }
+.capa .inst { position: absolute; left: 130px; top: 280px; font-size: 26px; font-weight: 400; color: var(--tinta-2); letter-spacing: 0.01em; }
+.capa .eixo { position: absolute; left: 130px; top: 324px; font-size: 26px; font-weight: 400; color: var(--ufpr); letter-spacing: 0.01em; }
+.capa h1 { position: absolute; left: 130px; top: 400px; width: 1080px; font-family: var(--font-display); font-size: 62px; line-height: 1.12; font-weight: 700; color: var(--tinta); }
+.capa .sub { position: absolute; left: 130px; top: 640px; width: 1020px; font-size: 30px; line-height: 1.4; color: var(--tinta-2); }
+.capa .grade { left: 1330px; top: 290px; }
+.capa .grade-leg { position: absolute; left: 1330px; top: 820px; width: 470px; font-size: 24px; line-height: 1.4; color: var(--tinta-2); }
+.capa .creditos { position: absolute; left: 130px; top: 860px; width: 1660px; font-size: 24px; line-height: 1.55; color: var(--tinta-2); }
+.capa .creditos .nomes { color: var(--tinta); font-size: 28px; }
 
 /* SLIDE 1: CONTEXTO E DEMANDA */
-.s1 .lista { position: absolute; left: 130px; top: 290px; width: 1000px; }
+.s1 .lista { position: absolute; left: 130px; top: 270px; width: 1000px; }
 .s1 .placar { position: absolute; left: 1230px; top: 290px; width: 560px; display: grid; grid-template-columns: auto 1fr 1fr; gap: 22px 30px; align-items: baseline; }
-.s1 .placar .cab { font-size: 24px; font-weight: 600; color: var(--claro); }
-.s1 .placar .local { font-size: 28px; font-weight: 600; color: var(--branco); }
-.s1 .placar .valor { font-family: var(--font-display); font-size: 76px; font-weight: 700; line-height: 1; color: var(--areia); }
-.s1 .placar .valor.cwb { color: var(--branco); }
-.s1 .placar-nota { position: absolute; left: 1230px; top: 640px; width: 560px; font-size: 22px; line-height: 1.45; color: var(--claro); }
+.s1 .placar .cab { font-size: 24px; font-weight: 400; color: var(--tinta-2); }
+.s1 .placar .local { font-size: 28px; font-weight: 400; color: var(--tinta); }
+.s1 .placar .valor { font-family: var(--font-display); font-size: 72px; font-weight: 400; line-height: 1; color: var(--ufpr); }
+.s1 .placar .valor.cwb { color: var(--tinta); }
+.s1 .placar-nota { position: absolute; left: 1230px; top: 640px; width: 560px; font-size: 22px; line-height: 1.45; color: var(--tinta-2); }
 
 /* SLIDE 2: SOLUÇÃO */
-.s2 .lista { position: absolute; left: 130px; top: 270px; width: 800px; }
-.s2 .cartao-img { left: 1000px; top: 280px; width: 790px; padding: 10px; }
-.s2 .acao { position: absolute; left: 1000px; top: 760px; display: flex; flex-direction: column; gap: 14px; }
-.s2 .acao span { font-size: 22px; color: var(--claro); }
+.s2 .lista { position: absolute; left: 130px; top: 260px; width: 800px; }
+.s2 .cartao-img { left: 1000px; top: 270px; width: 790px; padding: 8px; }
+.s2 .acao { position: absolute; left: 1000px; top: 750px; display: flex; flex-direction: column; gap: 14px; }
+.s2 .acao span { font-size: 22px; color: var(--tinta-2); }
 
 /* Links para os relatórios completos (slides 2 e 5) */
-.relatorios { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 22px; color: var(--claro); }
-.relatorios a { display: inline-flex; padding: 10px 18px; border-radius: 8px; border: 2px solid var(--areia);
-  color: var(--areia); font-weight: 600; text-decoration: none; }
-.relatorios a:hover { background: rgba(239, 217, 174, 0.12); }
-.relatorios a:focus-visible { outline: 3px solid var(--branco); outline-offset: 3px; }
+.relatorios { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 22px; color: var(--tinta-2); }
+.relatorios a { display: inline-flex; padding: 10px 18px; border-radius: 8px; border: 2px solid var(--ufpr);
+  color: var(--ufpr); font-weight: 400; text-decoration: none; }
+.relatorios a:hover { background: var(--azul-claro); }
+.relatorios a:focus-visible { outline: 3px solid var(--marinho); outline-offset: 3px; }
 .s5 .relatorios { position: absolute; right: 130px; top: 830px; }
 
 /* SLIDES 3A, 3B, 3C: RESULTADOS (descritiva, modelo, teste) */
-.s3 .cartao-img { left: 110px; top: 208px; width: 1040px; padding: 10px; }
-.s3 .lista { position: absolute; left: 1210px; top: 222px; width: 600px; }
-.s3c .cartao-img { top: 228px; width: 1080px; }
+.s3 .cartao-img { left: 110px; top: 200px; width: 1040px; padding: 8px; }
+.s3 .lista { position: absolute; left: 1210px; top: 214px; width: 600px; }
+.s3c .cartao-img { top: 220px; width: 1080px; }
 .s3c .lista { left: 1250px; width: 560px; }
-.passos { position: absolute; right: 130px; top: 72px; display: flex; gap: 10px; }
-.passos span { font-size: 20px; font-weight: 600; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--linha); color: var(--claro); opacity: 0.7; }
-.passos span.agora { background: var(--areia); color: var(--escuro); border-color: var(--areia); opacity: 1; }
+/* Etapas do processo, no centro do rodapé */
+.passos { position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%); display: flex; gap: 8px; z-index: 2; }
+.passos span { font-size: 19px; font-weight: 400; padding: 4px 14px; border-radius: 999px; border: 1px solid var(--linha); color: var(--tinta-2); background: var(--fundo); }
+.passos span.agora { background: var(--ufpr); color: #FFFFFF; border-color: var(--ufpr); }
 
 /* SLIDE 4: IMPACTO, com o painel ao vivo */
-.s4 .vivo { position: absolute; left: 110px; top: 208px; width: 1080px; height: 760px; border-radius: 12px; overflow: hidden;
-  background: #FFFFFF url("assets/app.png") center top / cover no-repeat; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35); }
+.s4 .vivo { position: absolute; left: 110px; top: 200px; width: 1080px; height: 760px; border-radius: 8px; overflow: hidden;
+  background: #FFFFFF url("assets/app.png") center top / cover no-repeat; border: 1px solid var(--linha); }
 .s4 .vivo iframe { width: 100%; height: 100%; border: 0; display: block; background: transparent; }
-.s4 .lista { position: absolute; left: 1250px; top: 222px; width: 560px; }
-.s4 .acao { position: absolute; left: 1250px; top: 820px; display: flex; flex-direction: column; gap: 12px; }
-.s4 .acao span { font-size: 21px; color: var(--claro); }
+.s4 .lista { position: absolute; left: 1250px; top: 214px; width: 560px; }
+.s4 .acao { position: absolute; left: 1250px; top: 810px; display: flex; flex-direction: column; gap: 12px; }
+.s4 .acao span { font-size: 21px; color: var(--tinta-2); }
 
-/* SLIDE 5: LIÇÕES E PRÓXIMOS PASSOS */
-.s5 .colunas { position: absolute; left: 130px; top: 250px; width: 1660px; display: grid; grid-template-columns: 1fr 1fr; gap: 90px; }
-.s5 h3 { font-family: var(--font-display); font-size: 34px; font-weight: 700; margin-bottom: 26px; color: var(--branco); }
-.s5 .obrigado { position: absolute; left: 130px; top: 790px; width: 1660px; font-family: var(--font-display); font-size: 50px; font-weight: 700; }
-.s5 .obrigado .nomes { font-family: var(--font-body); font-size: 25px; font-weight: 400; line-height: 1.5; color: var(--claro); }
-.s5 .obrigado .nomes:nth-child(2) { margin-top: 10px; color: var(--branco); font-weight: 600; }
+/* SLIDE 5: PRÓXIMOS PASSOS E DESAFIOS */
+.s5 .colunas { position: absolute; left: 130px; top: 240px; width: 1660px; display: grid; grid-template-columns: 1fr 1fr; gap: 90px; }
+.s5 h3 { font-family: var(--font-display); font-size: 34px; font-weight: 600; margin-bottom: 24px; color: var(--ufpr); }
+.s5 .obrigado { position: absolute; left: 130px; top: 790px; width: 1660px; font-family: var(--font-display); font-size: 46px; font-weight: 600; color: var(--tinta); }
+.s5 .obrigado .nomes { font-family: var(--font-body); font-size: 25px; font-weight: 400; line-height: 1.5; color: var(--tinta-2); }
+.s5 .obrigado .nomes:nth-child(2) { margin-top: 10px; color: var(--tinta); }
 
 /* ===========================================
    NOTAS DE FALA (N), PROGRESSO E EDIÇÃO (E)
    =========================================== */
 .notas { display: none; }
 .painel-notas { position: fixed; left: 24px; right: 24px; bottom: 24px; max-height: 40vh; overflow: auto; z-index: 900;
-  background: rgba(6, 24, 42, 0.96); color: var(--branco); border: 1px solid var(--linha); border-radius: 12px;
+  background: rgba(6, 24, 42, 0.96); color: #FFFFFF; border: 1px solid var(--linha); border-radius: 12px;
   padding: 18px 22px; font: 17px/1.5 var(--font-body); display: none; }
 .painel-notas.on { display: block; }
-.painel-notas h4 { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--claro); margin-bottom: 6px; }
+.painel-notas h4 { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: #E0EBF5; margin-bottom: 6px; }
 .progresso { position: fixed; left: 0; bottom: 0; height: 4px; background: var(--ufpr); z-index: 800; transition: width 0.3s var(--ease); }
 .edit-hotzone { position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 10000; cursor: pointer; }
 .edit-toggle { position: fixed; top: 16px; left: 16px; z-index: 10001; width: 44px; height: 44px; border-radius: 50%;
   border: 1px solid var(--linha); background: var(--ufpr); color: #fff; font-size: 20px; cursor: pointer;
   opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
 .edit-toggle.show, .edit-toggle.active { opacity: 1; pointer-events: auto; }
-body.editando [data-editavel] { outline: 2px dashed rgba(239, 217, 174, 0.6); outline-offset: 6px; }
+body.editando [data-editavel] { outline: 2px dashed rgba(0, 82, 150, 0.5); outline-offset: 6px; }
 </style>
 </head>
 <body>
@@ -203,12 +203,12 @@ body.editando [data-editavel] { outline: 2px dashed rgba(239, 217, 174, 0.6); ou
     <section class="slide capa active" aria-label="Capa" data-capa>
       <p class="inst reveal d1">Universidade Federal do Paraná · CE307 Projetos de Análise de Dados · 2026/2</p>
       <p class="eixo reveal d1">Projeto de extensão · Eixo 4: Educação Básica Municipal</p>
-      <h1 class="reveal d2">Fatores associados à proficiência <em>abaixo do nível básico</em> no 5º ano do Ensino Fundamental</h1>
+      <h1 class="reveal d2">Fatores associados à proficiência abaixo do nível básico no 5º ano do Ensino Fundamental</h1>
       <p class="sub reveal d3">Análise dos microdados do Saeb 2023, com comparação entre Curitiba e Brasil, em parceria com a Secretaria Municipal de Educação de Curitiba</p>
       <div class="grade" data-total="100" data-abaixo="7,18,23,39,44,51,62,70,85,91,96" aria-hidden="true"></div>
-      <p class="grade-leg reveal d6">De cada 100 alunos da amostra Brasil, <b>11</b> estão abaixo do básico em Matemática.</p>
+      <p class="grade-leg reveal d6">De cada 100 alunos da amostra Brasil, 11 estão abaixo do básico em Matemática.</p>
       <div class="creditos reveal d5">
-        <p><b>Henrique Dayrell · Pedro Groxko · Kadu Blank · João Pedro Brustulin</b></p>
+        <p class="nomes">Henrique Dayrell · Pedro Groxko · Kadu Blank · João Pedro Brustulin</p>
         <p>Orientação: Prof. Eduardo Vargas Ferreira · Parceria: André Zilio, estatístico da SME Curitiba</p>
       </div>
       <div class="rodape-slide"><span>Curitiba, 02/12/2026</span><span></span></div>
@@ -218,13 +218,13 @@ body.editando [data-editavel] { outline: 2px dashed rgba(239, 217, 174, 0.6); ou
     <!-- ============ 1. O CONTEXTO E A DEMANDA ============ -->
     <section class="slide s1" aria-label="O contexto e a demanda">
       <p class="etapa reveal d1">1 · O contexto e a demanda</p>
-      <h2 class="titulo-slide reveal d1">Alunos do 5º ano <em>abaixo do nível básico</em></h2>
+      <h2 class="titulo-slide reveal d1">Alunos do 5º ano abaixo do nível básico</h2>
       <ul class="lista">
-        <li class="reveal d2"><b>Parceiro:</b> Secretaria Municipal de Educação de Curitiba (SME).</li>
-        <li class="reveal d3"><b>O problema:</b> no Saeb 2023, <span class="num-dest">7,7%</span> dos alunos do 5º ano estão abaixo do básico em Língua Portuguesa e <span class="num-dest">11,0%</span> em Matemática. A referência é de até 5%.</li>
-        <li class="reveal d4"><b>Em Curitiba:</b> <span class="num-dest">4,2%</span> em LP e <span class="num-dest">6,8%</span> em MT. Matemática é o ponto mais frágil nos dois.</li>
-        <li class="reveal d5"><b>A demanda:</b> saber quais alunos concentram mais casos abaixo do básico, para direcionar o apoio.</li>
-        <li class="reveal d6"><b>A pergunta:</b> quais fatores estão associados a estar abaixo do nível básico?</li>
+        <li class="reveal d2">Parceiro: Secretaria Municipal de Educação de Curitiba (SME).</li>
+        <li class="reveal d3">O problema: no Saeb 2023, <span class="num-dest">7,7%</span> dos alunos do 5º ano estão abaixo do básico em Língua Portuguesa e <span class="num-dest">11,0%</span> em Matemática. A referência é de até 5%.</li>
+        <li class="reveal d4">Em Curitiba: <span class="num-dest">4,2%</span> em LP e <span class="num-dest">6,8%</span> em MT. Matemática é o ponto mais frágil nos dois.</li>
+        <li class="reveal d5">A demanda: saber quais alunos concentram mais casos abaixo do básico, para direcionar o apoio.</li>
+        <li class="reveal d6">A pergunta: quais fatores estão associados a estar abaixo do nível básico?</li>
       </ul>
       <div class="placar reveal d3">
         <span></span><span class="cab">LP</span><span class="cab">MT</span>
@@ -239,13 +239,13 @@ body.editando [data-editavel] { outline: 2px dashed rgba(239, 217, 174, 0.6); ou
     <!-- ============ 2. A SOLUÇÃO DESENVOLVIDA ============ -->
     <section class="slide s2" aria-label="A solução desenvolvida">
       <p class="etapa reveal d1">2 · A solução desenvolvida</p>
-      <h2 class="titulo-slide reveal d1">Dados, dois relatórios, um modelo e um <em>painel</em></h2>
+      <h2 class="titulo-slide reveal d1">O que foi desenvolvido</h2>
       <ul class="lista compacta">
-        <li class="reveal d2"><b>Dados:</b> microdados do Saeb 2023 (Inep). Amostra de <span class="num-dest">10.068</span> alunos do Brasil e <span class="num-dest">4.452</span> de Curitiba, todos com questionário completo.</li>
-        <li class="reveal d3"><b>Cuidado com o viés:</b> quem deixou questão em branco tem <span class="num-dest">19,5%</span> abaixo do básico em LP, contra 7,9% de quem respondeu tudo. Nossos números subestimam o problema.</li>
-        <li class="reveal d4"><b>Relatório descritivo:</b> 18 grupos de alunos e a comparação Curitiba × Brasil.</li>
-        <li class="reveal d5"><b>Modelo de regressão logística</b>, com orientação do Prof. Eduardo, conferido em 1.006 alunos separados para teste.</li>
-        <li class="reveal d6"><b>Painel em Shiny</b> para estimar o risco de um aluno. Tudo em R, R Markdown e GitHub.</li>
+        <li class="reveal d2">Dados: microdados do Saeb 2023 (Inep). Amostra de <span class="num-dest">10.068</span> alunos do Brasil e <span class="num-dest">4.452</span> de Curitiba, todos com questionário completo.</li>
+        <li class="reveal d3">Cuidado com o viés: quem deixou questão em branco tem <span class="num-dest">19,5%</span> abaixo do básico em LP, contra 7,9% de quem respondeu tudo. Nossos números subestimam o problema.</li>
+        <li class="reveal d4">Relatório descritivo: 18 grupos de alunos e a comparação Curitiba × Brasil.</li>
+        <li class="reveal d5">Modelo de regressão logística, com orientação do Prof. Eduardo, conferido em 1.006 alunos separados para teste.</li>
+        <li class="reveal d6">Painel em Shiny para estimar o risco de um aluno. Tudo em R, R Markdown e GitHub.</li>
       </ul>
       <div class="cartao-img reveal d3"><img src="assets/app.png" alt="Painel em Shiny: com quatro características marcadas, a probabilidade é de 25,2% em Língua Portuguesa e 39,7% em Matemática"></div>
       <div class="acao reveal d5">
@@ -261,14 +261,14 @@ body.editando [data-editavel] { outline: 2px dashed rgba(239, 217, 174, 0.6); ou
     <section class="slide s3" aria-label="Principais resultados: a descritiva">
       <p class="etapa reveal d1">3 · Principais resultados e evidências</p>
       <div class="passos reveal d1"><span class="agora">Descritiva</span><span>Modelo</span><span>Teste</span></div>
-      <h2 class="titulo-slide reveal d1">Descritiva: onde estão os alunos <em>abaixo do básico</em></h2>
+      <h2 class="titulo-slide reveal d1">Análise descritiva: alunos abaixo do básico por grupo</h2>
       <div class="cartao-img reveal d2"><img src="assets/grupos_risco.png" alt="Proporção abaixo do básico nos 18 grupos de alunos e entre os demais, em Língua Portuguesa e Matemática; em todos os grupos a proporção é maior que a dos demais"></div>
       <ul class="lista compacta">
-        <li class="reveal d3">Cada característica olhada <b>uma por vez</b>: alunos do grupo contra os demais.</li>
-        <li class="reveal d4">Os 18 grupos têm de <b>1,5 a 3 vezes</b> mais alunos abaixo do básico.</li>
-        <li class="reveal d5"><b>Já reprovou:</b> <span class="num-dest">19,9%</span> em LP e <span class="num-dest">26,8%</span> em MT, contra 6,3% e 9,2% dos demais.</li>
-        <li class="reveal d6"><b>INSE:</b> de <span class="num-dest">25,2%</span> no nível I a <span class="num-dest">3,0%</span> no nível VII (LP).</li>
-        <li class="reveal d6">Mas as características <b>andam juntas</b>: quem reprovou tende a ser mais velho; quem é mais pobre mora mais em rua sem asfalto.</li>
+        <li class="reveal d3">Cada característica olhada uma por vez: alunos do grupo contra os demais.</li>
+        <li class="reveal d4">Os 18 grupos têm de 1,5 a 3 vezes mais alunos abaixo do básico.</li>
+        <li class="reveal d5">Já reprovou: <span class="num-dest">19,9%</span> em LP e <span class="num-dest">26,8%</span> em MT, contra 6,3% e 9,2% dos demais.</li>
+        <li class="reveal d6">INSE: de <span class="num-dest">25,2%</span> no nível I a <span class="num-dest">3,0%</span> no nível VII (LP).</li>
+        <li class="reveal d6">Mas as características andam juntas: quem reprovou tende a ser mais velho; quem é mais pobre mora mais em rua sem asfalto.</li>
       </ul>
       <div class="rodape-slide"><span>Gráfico do relatório descritivo · base de treino, 9.062 alunos</span><span class="pagina"></span></div>
       <aside class="notas">Fala: [quem]. Cerca de 1 min 15 s. Primeiro passo: a descritiva. Ponto vermelho é a proporção abaixo do básico no grupo; ponto cinza, entre os demais. Em todos os grupos o vermelho fica à direita. As maiores proporções estão na trajetória escolar, na rotina e na relação com a escola; o INSE tem o gradiente mais claro. Fizemos a mesma descritiva para Curitiba: a cidade tem menos alunos abaixo do básico, e a maior parte dessa vantagem acompanha o perfil socioeconômico. Mas olhando uma característica por vez não dá para saber o que cada uma acrescenta, porque elas andam juntas. Por isso o modelo.</aside>
@@ -278,13 +278,13 @@ body.editando [data-editavel] { outline: 2px dashed rgba(239, 217, 174, 0.6); ou
     <section class="slide s3" aria-label="Principais resultados: o modelo">
       <p class="etapa reveal d1">3 · Principais resultados e evidências</p>
       <div class="passos reveal d1"><span>Descritiva</span><span class="agora">Modelo</span><span>Teste</span></div>
-      <h2 class="titulo-slide reveal d1">Modelo: o que se mantém com tudo <em>junto</em></h2>
+      <h2 class="titulo-slide reveal d1">Modelo de regressão logística: razões de chances</h2>
       <div class="cartao-img reveal d2"><img src="assets/razoes_chances.png" alt="Razões de chances das 15 características que ficaram no modelo, em Língua Portuguesa e em Matemática, todas maiores que 1"></div>
       <ul class="lista compacta">
-        <li class="reveal d3"><b>Regressão logística</b> com as 18 características, uma para LP e outra para MT; ficam as significativas.</li>
+        <li class="reveal d3">Regressão logística com as 18 características, uma para LP e outra para MT; ficam as significativas.</li>
         <li class="reveal d4"><span class="num-dest">15</span> das 18 seguem associadas mesmo com as outras no modelo.</li>
         <li class="reveal d5">Ex.: quem já reprovou tem chance <span class="num-dest">85%</span> maior em LP e o <span class="num-dest">dobro</span> em MT.</li>
-        <li class="reveal d6"><b>Rua sem iluminação</b> parecia importante na descritiva (12,9% contra 7,4%), mas <b>some</b>: anda junto com rua sem asfalto e escola rural.</li>
+        <li class="reveal d6">Rua sem iluminação parecia importante na descritiva (12,9% contra 7,4%), mas some: anda junto com rua sem asfalto e escola rural.</li>
       </ul>
       <div class="rodape-slide"><span>Gráfico do relatório do modelo · orientação do Prof. Eduardo Vargas Ferreira</span><span class="pagina"></span></div>
       <aside class="notas">Fala: [quem]. Cerca de 1 min 15 s. Segundo passo: o modelo, seguindo a metodologia proposta pelo professor. Cada ponto é a razão de chances: quantas vezes a chance de estar abaixo do básico fica maior quando o aluno tem a característica, mantidas as outras iguais. A linha tracejada é o 1, que significa "não muda nada". Reprovação, idade, entrada tardia e INSE pesam nas duas disciplinas. A iluminação e a escolaridade da mãe somem quando as outras entram. O modelo foi estimado só com a base de treino; ele não foi aplicado aos alunos de Curitiba.</aside>
@@ -294,13 +294,13 @@ body.editando [data-editavel] { outline: 2px dashed rgba(239, 217, 174, 0.6); ou
     <section class="slide s3 s3c" aria-label="Principais resultados: o teste">
       <p class="etapa reveal d1">3 · Principais resultados e evidências</p>
       <div class="passos reveal d1"><span>Descritiva</span><span>Modelo</span><span class="agora">Teste</span></div>
-      <h2 class="titulo-slide reveal d1">Teste: confirmado em <em>1.006 alunos</em> que o modelo não viu</h2>
+      <h2 class="titulo-slide reveal d1">Verificação do modelo na base de teste</h2>
       <div class="cartao-img reveal d2"><img src="assets/acumulo_teste.png" alt="Proporção de alunos abaixo do básico no teste por número de características, observada e prevista, subindo de 2,3% a 24,7% em LP e de 4,7% a 29,1% em MT"></div>
       <ul class="lista compacta">
         <li class="reveal d3">Base separada no início, sem uso no ajuste do modelo.</li>
-        <li class="reveal d4">O risco observado <b>se acumula</b>: de <span class="num-dest">2,3%</span> sem nenhuma característica a <span class="num-dest">24,7%</span> com 4 ou mais (LP).</li>
+        <li class="reveal d4">O risco observado se acumula: de <span class="num-dest">2,3%</span> sem nenhuma característica a <span class="num-dest">24,7%</span> com 4 ou mais (LP).</li>
         <li class="reveal d5">O previsto (X) acompanha o observado. Por característica, bate em <span class="num-dest">59 de 60</span> grupos.</li>
-        <li class="reveal d6">Os <b>9%</b> de alunos com 4 ou mais concentram <b>29%</b> dos abaixo do básico em LP.</li>
+        <li class="reveal d6">Os 9% de alunos com 4 ou mais concentram 29% dos abaixo do básico em LP.</li>
       </ul>
       <div class="rodape-slide"><span>Gráfico do relatório do modelo · base de teste, 1.006 alunos</span><span class="pagina"></span></div>
       <aside class="notas">Fala: [quem]. Cerca de 1 min. Terceiro passo: conferir o modelo em alunos que ele não viu, por probabilidades condicionais, como o professor pediu. Agrupando os alunos do teste pelo número de características, a proporção observada sobe e acompanha a prevista. Comparando grupo por grupo (quem tem e quem não tem cada característica, nas duas disciplinas), o previsto cai no intervalo de confiança do observado em 59 de 60; a exceção é "não mora com a mãe" em LP, com poucos casos.</aside>
@@ -309,13 +309,13 @@ body.editando [data-editavel] { outline: 2px dashed rgba(239, 217, 174, 0.6); ou
     <!-- ============ 4. O IMPACTO EXTENSIONISTA ============ -->
     <section class="slide s4" aria-label="O impacto extensionista">
       <p class="etapa reveal d1">4 · O impacto extensionista</p>
-      <h2 class="titulo-slide reveal d1">Um painel para decidir <em>quem acompanhar primeiro</em></h2>
+      <h2 class="titulo-slide reveal d1">Painel de risco e priorização de alunos</h2>
       <div class="vivo reveal d2"><iframe src="https://henriquedayrell.shinyapps.io/risco-abaixo-basico/?marcar=reprovou,idade_12,inse_baixo,sem_lazer" title="Painel de risco ao vivo, publicado no shinyapps.io" loading="eager"></iframe></div>
       <ul class="lista compacta">
-        <li class="reveal d3">Marcam-se as características do aluno e o painel mostra a <b>probabilidade</b> em LP e MT e o nível de risco.</li>
-        <li class="reveal d4">No teste, marcar os <b>20% de maior risco</b> alcança <span class="num-dest">42%</span> (LP) e <span class="num-dest">45%</span> (MT) dos alunos abaixo do básico.</li>
-        <li class="reveal d5">Os sinais mais fortes, como reprovação, idade e abandono, <b>a escola já tem</b>.</li>
-        <li class="reveal d6">Serve para <b>priorizar</b>, não para diagnosticar um aluno.</li>
+        <li class="reveal d3">Marcam-se as características do aluno e o painel mostra a probabilidade em LP e MT e o nível de risco.</li>
+        <li class="reveal d4">No teste, marcar os 20% de maior risco alcança <span class="num-dest">42%</span> (LP) e <span class="num-dest">45%</span> (MT) dos alunos abaixo do básico.</li>
+        <li class="reveal d5">Os sinais mais fortes, como reprovação, idade e abandono, a escola já tem.</li>
+        <li class="reveal d6">Serve para priorizar, não para diagnosticar um aluno.</li>
       </ul>
       <div class="acao reveal d6">
         <a class="botao" href="https://henriquedayrell.shinyapps.io/risco-abaixo-basico/" target="_blank" rel="noopener">Abrir o painel</a>
@@ -326,26 +326,25 @@ body.editando [data-editavel] { outline: 2px dashed rgba(239, 217, 174, 0.6); ou
     </section>
 
     <!-- ============ 5. LIÇÕES APRENDIDAS E PRÓXIMOS PASSOS ============ -->
-    <section class="slide s5" aria-label="Lições aprendidas e próximos passos">
-      <p class="etapa reveal d1">5 · Lições aprendidas e próximos passos</p>
-      <h2 class="titulo-slide reveal d1">O que aprendemos e o que vem depois</h2>
+    <section class="slide s5" aria-label="Próximos passos e desafios">
+      <p class="etapa reveal d1">5 · Próximos passos e desafios</p>
+      <h2 class="titulo-slide reveal d1">Próximos passos e desafios</h2>
       <div class="colunas">
         <div class="reveal d2">
-          <h3>Desafios</h3>
+          <h3>Próximos passos</h3>
           <ul class="lista compacta">
-            <li>O filtro de questionário completo deixa de fora alunos com mais dificuldade: os números <b>subestimam</b> o problema.</li>
-            <li>As características andam juntas: separar o efeito de cada uma exigiu o modelo.</li>
-            <li>Grupos pequenos, como TEA e deficiência, dão resultados incertos.</li>
-            <li>A base não distingue escolas <b>municipais</b> de estaduais.</li>
+            <li>Aplicar o painel e o modelo na rede municipal, para orientar ações de acompanhamento dos alunos.</li>
+            <li>Aplicar o modelo aos 4.452 alunos de Curitiba e conferir o resultado com a SME.</li>
+            <li>Usar dados da própria rede, que separem escolas municipais de estaduais.</li>
+            <li>Testar interações entre as características no modelo.</li>
           </ul>
         </div>
         <div class="reveal d3">
-          <h3>Próximos passos</h3>
+          <h3>Desafios</h3>
           <ul class="lista compacta">
-            <li>Aplicar o modelo aos <b>4.452 alunos de Curitiba</b>.</li>
-            <li>Trabalhar com dados da própria rede municipal.</li>
-            <li>Testar <b>interações</b> entre as características no modelo.</li>
-            <li>Levar o painel à SME e ajustar com o uso das escolas.</li>
+            <li>Grupos com poucos alunos, como TEA e deficiência, dão estimativas incertas no modelo.</li>
+            <li>Entender e comunicar o modelo: a razão de chances multiplica a chance, não a probabilidade, e indica associação, não causa.</li>
+            <li>O filtro de questionário completo deixa de fora alunos com mais dificuldade, então os números subestimam o problema.</li>
           </ul>
         </div>
       </div>
@@ -355,8 +354,8 @@ body.editando [data-editavel] { outline: 2px dashed rgba(239, 217, 174, 0.6); ou
         <p class="nomes">Henrique Dayrell · Pedro Groxko · Kadu Blank · João Pedro Brustulin</p>
         <p class="nomes">Orientação: Prof. Eduardo Vargas Ferreira (UFPR) · Parceria: André Zilio, estatístico da SME Curitiba</p>
       </div>
-      <div class="rodape-slide"><span>Lições aprendidas e próximos passos</span><span class="pagina"></span></div>
-      <aside class="notas">Fala: [quem]. Cerca de 45 s. Os resultados mostram associação, não causa. O próximo passo mais útil para a SME é olhar a própria rede municipal, já que a base do Saeb não separa escolas municipais de estaduais.</aside>
+      <div class="rodape-slide"><span>Próximos passos e desafios</span><span class="pagina"></span></div>
+      <aside class="notas">Fala: [quem]. Cerca de 45 s. O principal próximo passo é usar o resultado na prática: aplicar o painel e o modelo aos alunos da rede municipal para orientar ações de acompanhamento. Desafios: grupos com poucos alunos dão estimativas incertas no modelo, e ler o modelo exige cuidado (razão de chances multiplica a chance, não a probabilidade; associação não é causa).</aside>
     </section>
 
   </main>

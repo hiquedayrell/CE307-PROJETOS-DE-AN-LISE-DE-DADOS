@@ -296,7 +296,9 @@ Pergunta ao professor sobre usar mais de 5 slides: sem resposta registrada.
   7/7, seguindo os 5 itens do roteiro: 1 contexto; 2 solução; 3a descritiva
   (fig-risco, 18 grupos); 3b modelo (fig-or); 3c teste (fig-acumulo); 4
   impacto, com o painel do shinyapps.io embutido ao vivo (iframe; sem internet
-  aparece a imagem `assets/app.png`); 5 lições. Curitiba só nas notas e no
+  aparece a imagem `assets/app.png`); 5 próximos passos e desafios (aplicar
+  o painel e o modelo na rede para orientar ações; amostras pequenas dão
+  estimativas incertas; entender e comunicar o modelo). Curitiba só nas notas e no
   slide 1. Notas de fala somam cerca de 7 min 50 s. Título da capa: "Fatores
   associados à proficiência abaixo do nível básico no 5º ano do Ensino
   Fundamental". Estrutura da skill frontend-slides
@@ -309,8 +311,17 @@ Pergunta ao professor sobre usar mais de 5 slides: sem resposta registrada.
   código dos relatórios (só ASCII; nome de coluna com acento não pode ficar
   entre crases usando código Unicode). `assets/app.png` é a tela do
   painel com 4 características marcadas.
-- Visual: estilo "grade de alunos" (fundo azul escuro, amarelo-areia `#EFD9AE`
-  para "abaixo do básico"), fontes do sistema para funcionar offline.
+- Visual (decisão do Henrique, 24/11/2026): fundo branco com azul UFPR
+  `#005296` (faixa no topo, marcadores, números em destaque, alunos abaixo do
+  básico na grade da capa), logo da UFPR em todos os slides (arquivo
+  `assets/logo_ufpr_portal.png`, branco, baixado do portal ufpr.br; no HTML vai
+  embutido em base64 e pintado de azul por máscara CSS, para funcionar também
+  aberto direto do disco). Sem negrito em nenhum texto além dos títulos.
+  Títulos diretos, sem jogos de palavra: "O que foi desenvolvido", "Análise
+  descritiva: alunos abaixo do básico por grupo", "Modelo de regressão
+  logística: razões de chances", "Verificação do modelo na base de teste",
+  "Painel de risco e priorização de alunos", "Próximos passos e desafios".
+  Fontes do sistema para funcionar offline.
 - Botão "Abrir o painel" (slides 2 e 4) leva ao app publicado no
   shinyapps.io (precisa de internet). O app aceita
   `?marcar=reprovou,idade_12,...` na URL para abrir com características já
