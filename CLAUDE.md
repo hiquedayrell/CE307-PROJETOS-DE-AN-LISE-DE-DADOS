@@ -347,6 +347,16 @@ Pergunta ao professor sobre usar mais de 5 slides: sem resposta registrada.
   Desafios (slide 5) incluem o viés do questionário completo (sem números)
   e a limitação do painel: será usado em alunos fora da amostra, e o
   resultado deles não precisa ser igual ao previsto.
+- Retorno do professor (27/11/2026, áudio): apresentação boa; pediu o
+  mínimo de texto nos slides (a interpretação vai na fala; imagens e números
+  como lembrete), não entendeu a frase da demanda nem o "X" do gráfico de
+  teste (X lembra variável explicativa) e achou o painel ao vivo o melhor
+  ponto. Aplicado: slide 1 só com parceiro, demanda ("entender o que está
+  por trás do baixo desempenho, para orientar ações") e pergunta, com o
+  placar à direita; slides 3a, 3b e 3c com o gráfico e 1 ou 2 números em
+  destaque (bloco `.lembretes`), e o resto foi para as notas de fala; na
+  legenda do gráfico de teste, "Cruz e linha tracejada: previsto pelo
+  modelo".
 - Relatórios em HTML para a apresentação e para o git (24/11/2026):
   `Entregas/apresentacao/relatorios/relatorio_descritivo.html` (do
   `relatorio_descritivo_revisado.Rmd`) e `relatorio_modelo.html`. Ficam nessa

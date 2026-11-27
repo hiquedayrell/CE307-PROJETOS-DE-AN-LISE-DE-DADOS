@@ -130,7 +130,7 @@ g_acum <- perfis %>%
   scale_y_continuous(labels = eixo_pct, limits = c(0, NA)) +
   labs(x = "N\u00famero de caracter\u00edsticas do aluno",
        y = "% abaixo do b\u00e1sico no teste",
-       caption = "Ponto: observado no teste (IC 95%). X: previsto pelo modelo.") +
+       caption = "Ponto: observado no teste (faixa: IC de 95%). Cruz e linha tracejada: previsto pelo modelo.") +
   theme(legend.position = "none", plot.caption = element_text(size = 19, color = "grey30"))
 
 ggsave(file.path(pasta, "acumulo_teste.png"), g_acum, width = 2400, height = 1350, units = "px", dpi = 150)

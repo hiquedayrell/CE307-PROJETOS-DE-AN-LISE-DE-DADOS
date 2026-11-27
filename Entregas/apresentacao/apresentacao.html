@@ -167,6 +167,11 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
 .passos span { font-size: 19px; font-weight: 600; padding: 4px 14px; border-radius: 999px; border: 1px solid var(--linha); color: var(--tinta-2); background: var(--fundo); }
 .passos span.agora { background: var(--ufpr); color: #FFFFFF; border-color: var(--ufpr); }
 
+.lembretes { position: absolute; left: 1210px; top: 230px; width: 600px; display: flex; flex-direction: column; gap: 40px; }
+.s3c .lembretes { left: 1250px; width: 560px; }
+.lembretes div { display: flex; flex-direction: column; gap: 6px; padding-left: 22px; border-left: 6px solid var(--ufpr); }
+.lembretes strong { font-size: 60px; font-weight: 700; line-height: 1.05; color: var(--ufpr); }
+.lembretes span { font-size: 26px; line-height: 1.35; color: var(--tinta-2); }
 .cenario { position: absolute; left: 1210px; top: 600px; width: 600px; padding: 24px 28px; border-radius: 8px; background: var(--azul-claro); border: 1px solid #C5D6EA; }
 .cenario-tit { font-size: 24px; line-height: 1.35; color: var(--tinta); }
 .cenario-num { display: grid; grid-template-columns: auto auto auto auto; justify-content: start; align-items: baseline; gap: 6px 18px; margin: 14px 0 10px; }
@@ -233,18 +238,17 @@ body.editando [data-editavel] { outline: 2px dashed rgba(0, 82, 150, 0.5); outli
       <h2 class="titulo-slide reveal d1">Alunos do 5º ano abaixo do nível básico</h2>
       <ul class="lista">
         <li class="reveal d2">Parceiro: Secretaria Municipal de Educação de Curitiba (SME).</li>
-        <li class="reveal d3">Saeb 2023: <span class="num-dest">7,7%</span> dos alunos do 5º ano abaixo do básico em LP e <span class="num-dest">11,0%</span> em MT. A referência é de até 5%.</li>
-        <li class="reveal d4">Demanda: identificar quais alunos concentram mais casos, para direcionar o apoio.</li>
-        <li class="reveal d5">Pergunta: quais fatores estão associados a estar abaixo do nível básico?</li>
+        <li class="reveal d3">Demanda: entender o que está por trás do baixo desempenho, para orientar ações.</li>
+        <li class="reveal d4">Pergunta: quais fatores estão associados a estar abaixo do nível básico?</li>
       </ul>
       <div class="placar reveal d3">
         <span></span><span class="cab">LP</span><span class="cab">MT</span>
         <span class="local">Brasil</span><span class="valor">7,7%</span><span class="valor">11,0%</span>
         <span class="local">Curitiba</span><span class="valor cwb">4,2%</span><span class="valor cwb">6,8%</span>
       </div>
-      <p class="placar-nota reveal d4">Alunos abaixo do nível básico, Saeb 2023. LP: até 150 pontos; MT: até 175.</p>
+      <p class="placar-nota reveal d4">Alunos abaixo do nível básico, Saeb 2023. LP: até 150 pontos; MT: até 175. Referência: até 5%.</p>
       <div class="rodape-slide"><span>O contexto e a demanda</span><span class="pagina"></span></div>
-      <aside class="notas">Fala: [quem]. Cerca de 1 min. O problema: parte dos alunos do 5º ano não atinge o mínimo esperado, acima da referência de 5% (Soares, 2009). Curitiba vai melhor que o Brasil, mas Matemática segue acima da referência. A SME quer saber quais alunos concentram mais casos, para direcionar o apoio.</aside>
+      <aside class="notas">Fala: [quem]. Cerca de 1 min. O problema: parte dos alunos do 5º ano não atinge o mínimo esperado, acima da referência de 5% (Soares, 2009). Curitiba vai melhor que o Brasil, mas Matemática segue acima da referência. Ler o placar: no Brasil, 7,7% em Português e 11,0% em Matemática; em Curitiba, 4,2% e 6,8%. Matemática é o ponto mais frágil nos dois. A SME quer entender o que está por trás do baixo desempenho, para orientar ações. Daí a pergunta do trabalho.</aside>
     </section>
 
     <!-- ============ 2. A SOLUÇÃO DESENVOLVIDA ============ -->
@@ -276,14 +280,12 @@ body.editando [data-editavel] { outline: 2px dashed rgba(0, 82, 150, 0.5); outli
       <div class="passos reveal d1"><span class="agora">Descritiva</span><span>Modelo</span><span>Teste</span></div>
       <h2 class="titulo-slide reveal d1">Análise descritiva: alunos abaixo do básico por grupo</h2>
       <div class="cartao-img reveal d2"><img src="assets/grupos_risco.png" alt="Proporção abaixo do básico nos 18 grupos de alunos e entre os demais, em Língua Portuguesa e Matemática; em todos os grupos a proporção é maior que a dos demais"></div>
-      <ul class="lista compacta">
-        <li class="reveal d3">18 grupos, cada um contra os demais: de <span class="num-dest">1,5 a 3 vezes</span> mais alunos abaixo do básico.</li>
-        <li class="reveal d4">Já reprovou: <span class="num-dest">19,9%</span> (LP) e <span class="num-dest">26,8%</span> (MT), contra 6,3% e 9,2%.</li>
-        <li class="reveal d5">INSE: de <span class="num-dest">25,2%</span> no nível I a <span class="num-dest">3,0%</span> no nível VII (LP).</li>
-        <li class="reveal d6">A mesma descritiva foi feita para Curitiba (<span class="num-dest">4,2%</span> e <span class="num-dest">6,8%</span>), em comparação com o Brasil.</li>
-      </ul>
+      <div class="lembretes">
+        <div class="reveal d3"><strong>1,5 a 3 vezes</strong><span>mais alunos abaixo do básico em cada grupo do que nos demais</span></div>
+        <div class="reveal d4"><strong>Curitiba</strong><span>mesma análise, comparada com o Brasil</span></div>
+      </div>
       <div class="rodape-slide"><span>Gráfico do relatório descritivo · base de treino, 9.062 alunos</span><span class="pagina"></span></div>
-      <aside class="notas">Fala: [quem]. Cerca de 1 min 15 s. Primeiro passo: a descritiva. Ponto vermelho é a proporção abaixo do básico no grupo; ponto cinza, entre os demais. Em todos os grupos o vermelho fica à direita. As maiores proporções estão na trajetória escolar, na rotina e na relação com a escola; o INSE tem o gradiente mais claro. Fizemos a mesma descritiva para Curitiba: a cidade tem menos alunos abaixo do básico, e a maior parte dessa vantagem acompanha o perfil socioeconômico. Mas olhando uma característica por vez não dá para saber o que cada uma acrescenta, porque elas andam juntas. Por isso o modelo.</aside>
+      <aside class="notas">Fala: [quem]. Cerca de 1 min 15 s. Primeiro passo: a descritiva. Ponto vermelho é a proporção abaixo do básico no grupo; ponto cinza, entre os demais. Em todos os grupos o vermelho fica à direita: de 1,5 a 3 vezes a proporção dos demais. Exemplo: quem já reprovou tem 19,9% abaixo do básico em LP e 26,8% em MT, contra 6,3% e 9,2%. A faixa clara é o IC de 95%; é mais larga nos grupos com menos alunos. As maiores proporções estão na trajetória escolar, na rotina e na relação com a escola; o INSE tem o gradiente mais claro (de 25,2% no nível I a 3,0% no nível VII, em LP). Fizemos a mesma descritiva para Curitiba: a cidade tem menos alunos abaixo do básico, e a maior parte dessa vantagem acompanha o perfil socioeconômico. Mas olhando uma característica por vez não dá para saber o que cada uma acrescenta, porque elas andam juntas. Por isso o modelo.</aside>
     </section>
 
     <!-- ============ 3B. RESULTADOS: O MODELO ============ -->
@@ -292,17 +294,16 @@ body.editando [data-editavel] { outline: 2px dashed rgba(0, 82, 150, 0.5); outli
       <div class="passos reveal d1"><span>Descritiva</span><span class="agora">Modelo</span><span>Teste</span></div>
       <h2 class="titulo-slide reveal d1">Modelo de regressão logística: razões de chances</h2>
       <div class="cartao-img reveal d2"><img src="assets/razoes_chances.png" alt="Razões de chances das 15 características que ficaram no modelo, em Língua Portuguesa e em Matemática, todas maiores que 1"></div>
-      <ul class="lista compacta">
-        <li class="reveal d3">Uma regressão por disciplina: <span class="num-dest">15</span> das 18 características se mantêm.</li>
-        <li class="reveal d4">Rua sem iluminação sai: na descritiva parecia forte (12,9% contra 7,4%), mas acompanha a rua sem asfalto e a escola rural.</li>
-      </ul>
+      <div class="lembretes">
+        <div class="reveal d3"><strong>15 de 18</strong><span>características ficam no modelo, nas duas disciplinas</span></div>
+      </div>
       <div class="cenario reveal d5">
-        <p class="cenario-tit">Cenário: já reprovou, tem 12 anos ou mais, INSE I e II e não tem tempo de lazer</p>
+        <p class="cenario-tit">Exemplo: reprovou, 12 anos ou mais, INSE I e II, sem lazer</p>
         <div class="cenario-num"><span>LP</span><strong>25,2%</strong><span>MT</span><strong>39,7%</strong></div>
-        <p class="cenario-ref">Sem nenhuma característica: 3,2% em LP e 5,3% em MT. É o exemplo que o painel abre marcado.</p>
+        <p class="cenario-ref">Nenhuma característica: 3,2% e 5,3%</p>
       </div>
       <div class="rodape-slide"><span>Gráfico do relatório do modelo · orientação do Prof. Eduardo Vargas Ferreira</span><span class="pagina"></span></div>
-      <aside class="notas">Fala: [quem]. Cerca de 1 min 15 s. Segundo passo: o modelo, seguindo a metodologia proposta pelo professor. Cada ponto é a razão de chances: quantas vezes a chance de estar abaixo do básico fica maior quando o aluno tem a característica, mantidas as outras iguais. A linha tracejada é o 1, que significa "não muda nada". Reprovação, idade, entrada tardia e INSE pesam nas duas disciplinas. A iluminação e a escolaridade da mãe somem quando as outras entram. O modelo foi estimado só com a base de treino; ele não foi aplicado aos alunos de Curitiba.</aside>
+      <aside class="notas">Fala: [quem]. Cerca de 1 min 15 s. Segundo passo: o modelo, seguindo a metodologia proposta pelo professor. Cada ponto é a razão de chances: quantas vezes a chance de estar abaixo do básico fica maior quando o aluno tem a característica, mantidas as outras iguais. A linha tracejada é o 1, que significa "não muda nada". Reprovação, idade, entrada tardia e INSE pesam nas duas disciplinas. A iluminação e a escolaridade da mãe somem quando as outras entram: a rua sem iluminação parecia forte na descritiva (12,9% contra 7,4%), mas acompanha a rua sem asfalto e a escola rural. Exemplo do quadro (o mesmo que o painel abre marcado): um aluno que reprovou, tem 12 anos ou mais, INSE I e II e não tem lazer tem 25,2% de probabilidade em LP e 39,7% em MT; sem nenhuma característica, 3,2% e 5,3%. O modelo foi estimado só com a base de treino; ele não foi aplicado aos alunos de Curitiba.</aside>
     </section>
 
     <!-- ============ 3C. RESULTADOS: O TESTE ============ -->
@@ -311,13 +312,12 @@ body.editando [data-editavel] { outline: 2px dashed rgba(0, 82, 150, 0.5); outli
       <div class="passos reveal d1"><span>Descritiva</span><span>Modelo</span><span class="agora">Teste</span></div>
       <h2 class="titulo-slide reveal d1">Verificação do modelo na base de teste</h2>
       <div class="cartao-img reveal d2"><img src="assets/acumulo_teste.png" alt="Proporção de alunos abaixo do básico no teste por número de características, observada e prevista, subindo de 2,3% a 24,7% em LP e de 4,7% a 29,1% em MT"></div>
-      <ul class="lista compacta">
-        <li class="reveal d3">1.006 alunos separados no início, fora do ajuste do modelo.</li>
-        <li class="reveal d4">Observado sobe de <span class="num-dest">2,3%</span> (nenhuma característica) a <span class="num-dest">24,7%</span> (4 ou mais) em LP, junto com o previsto.</li>
-        <li class="reveal d5">Por característica, o previsto fica no IC do observado em <span class="num-dest">59 de 60</span> grupos.</li>
-      </ul>
+      <div class="lembretes">
+        <div class="reveal d3"><strong>1.006</strong><span>alunos guardados antes do modelo</span></div>
+        <div class="reveal d4"><strong>59 de 60</strong><span>grupos com o previsto dentro do IC do observado</span></div>
+      </div>
       <div class="rodape-slide"><span>Gráfico do relatório do modelo · base de teste, 1.006 alunos</span><span class="pagina"></span></div>
-      <aside class="notas">Fala: [quem]. Cerca de 1 min. Terceiro passo: conferir o modelo em alunos que ele não viu, por probabilidades condicionais, como o professor pediu. Agrupando os alunos do teste pelo número de características, a proporção observada sobe e acompanha a prevista. Comparando grupo por grupo (quem tem e quem não tem cada característica, nas duas disciplinas), o previsto cai no intervalo de confiança do observado em 59 de 60; a exceção é "não mora com a mãe" em LP, com poucos casos.</aside>
+      <aside class="notas">Fala: [quem]. Cerca de 1 min. Terceiro passo: conferir o modelo em alunos que ele não viu. No início separamos 1.006 alunos (10%) que não entraram no ajuste: é a base de teste. Para esses alunos, o modelo calcula a probabilidade de cada um estar abaixo do básico, e comparamos a média dessas probabilidades (o previsto) com a proporção que de fato está abaixo do básico (o observado), dentro de cada grupo. Isso são probabilidades condicionais, como o professor pediu. No gráfico, o ponto colorido é o observado, com a faixa do IC de 95%, e a cruz com a linha tracejada é o previsto. Agrupando os alunos do teste pelo número de características, a proporção observada sobe de 2,3% (nenhuma característica) a 24,7% (4 ou mais) em LP, e de 4,7% a 29,1% em MT, acompanhando a prevista. Comparando grupo por grupo (quem tem e quem não tem cada característica, nas duas disciplinas), o previsto cai no intervalo de confiança do observado em 59 de 60; a exceção é "não mora com a mãe" em LP, com poucos casos.</aside>
     </section>
 
     <!-- ============ 4. O IMPACTO EXTENSIONISTA ============ -->
